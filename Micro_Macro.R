@@ -1,20 +1,20 @@
 #####################################
-#Inhalt:  Auswertungen Kleinraum  	#
-#Datum: 	Januar 2018			            #
-#Autor: 	mape			 	            #
+#Inhalt:  Test Scripte  	          #
+#Datum: 	Januar 2018			          #
+#Autor: 	mape			 	              #
 #####################################
 ##graphics.off()
 ##dev.off()
 
-##Import Packages##
+
+##--Import Packages--##
 library(rgdal)
 
-fgdb <- "C:/Geodaten/LGV_Dienst/Arbeitsplaetze.gdb"
-fc <- readOGR(dsn=fgdb,layer="E_Arbeitsplaetze_Potenziale")
 
-t <- as.data.frame(fc)
+##--Verbindung zu Geodaten--##
+gdb <- "C:/Geodaten/Material.gdb" #Verbindung zur gdb
+Raster100 <- as.data.frame(readOGR(dsn=gdb,layer="MRH_EW_ha")) ##Schreibe Attriubuttabelle in Data-Frame
+print(colnames(Raster100)) ##Ausgabe der Spaltennamen
 
-
-##Ausgaben##
-#plot(fc[1:100,]) #nur die ersten 100 Zeilen
-plot.ts(t[2]) #nur die zweite Spalte
+# Gemeinden <- readOGR(dsn=gdb,layer="MRH_Gemeinden_2017")
+print(names(Gemeinden)) ##Namen der Attributspalten
