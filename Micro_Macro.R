@@ -31,8 +31,8 @@ print(head(VZellen@data))
 
 ##--Berechnung--##
 #1. Merge
-OEVAP30 <- merge(OEVAP30[c("ID","OEV_AP30")],Raster100[c("ID","EW","IDVZelle")],by="ID")
-OEVAP30 <- merge(OEVAP30[c("ID","OEV_AP30","EW","IDVZelle")],
+OEVAP30 <- merge(OEVAP30[c("ID","OEV_AP30")],Raster100[c("ID","EW","IDVZelle","ID500")],by="ID")
+OEVAP30 <- merge(OEVAP30[c("ID","OEV_AP30","EW","IDVZelle","ID500")],
                  data.frame(VZellen)[c("TYPENO","NO")],
                  by.x="IDVZelle",by.y="NO")
 
@@ -44,17 +44,31 @@ OEVAP30.erg <- merge(aggregate(AP30EW ~ IDVZelle+TYPENO, OEVAP30, stdabw.ggs),##
                     aggregate(AP30EW ~ IDVZelle, OEVAP30, mean),by="IDVZelle")
 colnames(OEVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean")
 
+OEVAP30.erg500 <- merge(aggregate(AP30EW ~ ID500+TYPENO, OEVAP30, stdabw.ggs),##Berechne sd und mean über Werte je Zelle
+                     aggregate(AP30EW ~ ID500, OEVAP30, mean),by="ID500")
+colnames(OEVAP30.erg500) <- c("ID500","VZTyp","AP30EW.sd","AP30EW.mean")
+
 #4. Berechnung Varianzkoeffizient
 OEVAP30.erg$AP30EW.cv <- with(OEVAP30.erg,AP30EW.sd/AP30EW.mean)
+
+OEVAP30.erg500$AP30EW.cv <- with(OEVAP30.erg500,AP30EW.sd/AP30EW.mean)
 
 #5. Weitere Datenaufbereitung
 OEVAP30.erg <- merge(OEVAP30.erg,aggregate(AP30EW ~ IDVZelle, 
                                            OEVAP30, length)) ##Fuege noch die laenge hinzu
 colnames(OEVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
-OEVAP30.erg <- merge(data.frame(VZellen$NO),OEVAP30.erg, by.x="VZellen.NO", by.y="IDVZelle",all=T)
+OEVAP30.erg <- merge(data.frame(VZellen$NO),OEVAP30.erg, 
+                     by.x="VZellen.NO", by.y="IDVZelle",all=T) ##ohne klappt merge an Shape nicht
 colnames(OEVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
 OEVAP30.erg[OEVAP30.erg=="NA"] <- NA
 OEVAP30.erg[OEVAP30.erg=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
+
+#--500--#
+OEVAP30.erg500 <- merge(OEVAP30.erg500,aggregate(AP30EW ~ ID500, 
+                                           OEVAP30, length)) ##Fuege noch die laenge hinzu
+colnames(OEVAP30.erg500) <- c("ID500","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
+OEVAP30.erg500[OEVAP30.erg500=="NA"] <- NA
+OEVAP30.erg500[OEVAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
 
 #6. Kategorisierung
 breaks.ctg = c(seq(0.0,2.6,0.2),Inf)
@@ -67,10 +81,19 @@ OEVAP30.erg$ctg <- ifelse(OEVAP30.erg$AP30EW.len<10,'missing',
                           OEVAP30.erg$ctg) ##Missung wenn zu wenige Faelle
 OEVAP30.erg$ctg <- ifelse(is.na(OEVAP30.erg$ctg),'missing', OEVAP30.erg$ctg) ##replace NA Values
 
+#--500--#
+OEVAP30.erg500$ctg <- as.character(cut(OEVAP30.erg500$AP30EW.cv, 
+                                    breaks = breaks.ctg, 
+                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
+OEVAP30.erg500[OEVAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
+OEVAP30.erg500$ctg <- ifelse(OEVAP30.erg500$AP30EW.len<3,'missing', 
+                             OEVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
+OEVAP30.erg500$ctg <- ifelse(is.na(OEVAP30.erg500$ctg),
+                             'missing', OEVAP30.erg500$ctg) ##replace NA Values
 
 ##--Visualisierungen--##
 #0.0 Parameter
-Farbe <- colorRampPalette(c("green", "white"))
+Farbe <- colorRampPalette(c("chartreuse","dodgerblue", "white"))
 Farbe <- c(Farbe(length(labels.ctg)),"red")
 ctgs <- factor(as.factor(OEVAP30.erg$ctg), 
                levels = c(labels.ctg,"missing")) ##Sortierung der Kategorien
@@ -83,10 +106,13 @@ VZellen.erg <- merge(VZellen, OEVAP30.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne
 #2.  Karte
 plot(VZellen.erg,col=Farbe[ctgs],border=NA)
 legend("bottomright", legend=levels(ctgs),fill=Farbe)
+plot(VZellen.erg[VZellen.erg$TYPENO==5,],col=Farbe[ctgs],border=NA) ##nur Hamburg
 
 #3. Diagramm
 # boxplot(na.omit(OEVAP30.erg$AP30EW.cv)) ##beruecksichtige keine leeren Felder
 # boxplot(na.omit(OEVAP30.erg$AP30EW.cv[OEVAP30.erg$VZTyp==4])) ##Plotte nur fur Typ 4
+# barplot(aggregate(AP30EW.cv ~ ctg,OEVAP30.erg, length)$AP30EW.cv,
+#         names.arg=unique(aggregate(AP30EW.cv ~ ctg,OEVAP30.erg, length)$ctg))
 
 ##--Ausgabe--##
 # write.xlsx(OEVAP30[OEVAP30$IDVZelle==203,], "C:\\Users\\mape\\Desktop\\test.xlsx")
