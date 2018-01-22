@@ -52,3 +52,6 @@ text(cor(AP30Gem_sd$EW, AP30Gem_sd$Pkw_AP30_sd),x=5000,y=250000)
 # plot(newobj, col = gray(newobj$Pkw_AP30_sd/max(newobj$Pkw_AP30_sd)),main ='Testkarte')
 # text(newobj, newobj$GF, cex=0.75)
 # plot(newobj, col = terrain.colors(20), axes=FALSE, main ='Testkarte')
+
+##--Ausgabe--##
+# write.xlsx(OEVAP30[OEVAP30$IDVZelle==203,], "C:\\Users\\mape\\Desktop\\test.xlsx")
