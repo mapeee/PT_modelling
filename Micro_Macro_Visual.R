@@ -105,4 +105,5 @@ barplot(table(MIVAP30.erg500[MIVAP30.erg500$ctg!='missing',]$ctg)[levels(ctgs.mi
         cex.names = 0.8)
 
 #--Ende--#
+dev.copy(png,'Abbildungen/OEV_micro_macro.png',width=1500, height=1000, pointsize=12)
 dev.off()
