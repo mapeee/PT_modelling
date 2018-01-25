@@ -3,8 +3,6 @@
 #Datum: 	Januar 2018			          #
 #Autor: 	mape			 	              #
 #####################################
-##graphics.off()
-##dev.off()
 
 
 ##--Import Packages--##
@@ -36,56 +34,58 @@ AP30 <- merge(AP30[c("ID","OEV_AP30","Pkw_AP30","EW","IDVZelle","ID500")],
               by.x="IDVZelle",by.y="NO")
 
 #2. Produkt aus EW und Indikatorwert
-AP30$AP30EW.miv <- with(AP30,EW*Pkw_AP30) ##lege neue Spalte an und packe dort das Produkt rein
+#######
 
 #3. Standardabweichung und Mittelwert je Zelle
-MIVAP30.erg <- merge(aggregate(AP30EW.miv ~ IDVZelle+TYPENO, AP30, stdabw.ggs),##Berechne sd und mean über Werte je Zelle
-                     aggregate(AP30EW.miv ~ IDVZelle, AP30, mean),by="IDVZelle")
-colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean")
+MIVAP30.erg <- merge(aggregate(Pkw_AP30 ~ IDVZelle+TYPENO, AP30, stdabw.ggs),##Berechne sd und mean über Werte je Zelle
+                     aggregate(Pkw_AP30 ~ IDVZelle, AP30, mean),by="IDVZelle")
+colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30.sd","AP30.mean")
 
-MIVAP30.erg500 <- merge(aggregate(AP30EW.miv ~ ID500+TYPENO, AP30, stdabw.ggs),##Berechne sd und mean über Werte je Zelle
-                        aggregate(AP30EW.miv ~ ID500, AP30, mean),by="ID500")
-colnames(MIVAP30.erg500) <- c("ID500","VZTyp","AP30EW.sd","AP30EW.mean")
+MIVAP30.erg500 <- merge(aggregate(Pkw_AP30 ~ ID500+TYPENO, AP30, stdabw.ggs),##Berechne sd und mean über Werte je Zelle
+                        aggregate(Pkw_AP30 ~ ID500, AP30, mean),by="ID500")
+colnames(MIVAP30.erg500) <- c("ID500","VZTyp","AP30.sd","AP30.mean")
 
 #4. Berechnung Varianzkoeffizient
-MIVAP30.erg$AP30EW.cv <- with(MIVAP30.erg,AP30EW.sd/AP30EW.mean)
-MIVAP30.erg500$AP30EW.cv <- with(MIVAP30.erg500,AP30EW.sd/AP30EW.mean)
+MIVAP30.erg$AP30.cv <- with(MIVAP30.erg,AP30.sd/AP30.mean)
+MIVAP30.erg500$AP30.cv <- with(MIVAP30.erg500,AP30.sd/AP30.mean)
 
 #5. Weitere Datenaufbereitung
-MIVAP30.erg <- merge(MIVAP30.erg,aggregate(AP30EW.miv ~ IDVZelle, 
+MIVAP30.erg <- merge(MIVAP30.erg,aggregate(Pkw_AP30 ~ IDVZelle, 
                                            AP30, length)) ##Fuege noch die laenge hinzu
-colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
+colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30.sd","AP30.mean","AP30.cv","AP30.len")
 MIVAP30.erg <- merge(data.frame(VZellen$NO),MIVAP30.erg, 
                      by.x="VZellen.NO", by.y="IDVZelle",all=T) ##ohne klappt merge an Shape nicht
-colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
+colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","AP30.sd","AP30.mean","AP30.cv","AP30.len")
 MIVAP30.erg[MIVAP30.erg=="NA"] <- NA
 MIVAP30.erg[MIVAP30.erg=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
 
 #--500--#
-MIVAP30.erg500 <- merge(MIVAP30.erg500,aggregate(AP30EW.miv ~ ID500, 
+MIVAP30.erg500 <- merge(MIVAP30.erg500,aggregate(Pkw_AP30 ~ ID500, 
                                                  AP30, length)) ##Fuege noch die laenge hinzu
-colnames(MIVAP30.erg500) <- c("ID500","VZTyp","AP30EW.sd","AP30EW.mean","AP30EW.cv","AP30EW.len")
+colnames(MIVAP30.erg500) <- c("ID500","VZTyp","AP30.sd","AP30.mean","AP30.cv","AP30.len")
 MIVAP30.erg500[MIVAP30.erg500=="NA"] <- NA
 MIVAP30.erg500[MIVAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
 
 #6. Kategorisierung
-breaks.ctg = c(seq(0.0,2.6,0.2),Inf)
-labels.ctg = c(as.character(seq(0.2,2.6,0.2)),">2.6") ##Ein label weniger als break!!
+breaks.ctg = c(seq(0.0,1.3,0.1),Inf)
+labels.ctg = c(as.character(seq(0.1,1.3,0.1)),">1.3") ##Ein label weniger als break!!
 
-MIVAP30.erg$ctg <- as.character(cut(MIVAP30.erg$AP30EW.cv, 
+MIVAP30.erg$ctg <- as.character(cut(MIVAP30.erg$AP30.cv, 
                                     breaks = breaks.ctg, 
                                     labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
 MIVAP30.erg[MIVAP30.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-MIVAP30.erg$ctg <- ifelse(MIVAP30.erg$AP30EW.len<10,'missing', 
+MIVAP30.erg$ctg <- ifelse(is.na(MIVAP30.erg$ctg),0, MIVAP30.erg$ctg) ##replace NA Values
+MIVAP30.erg$ctg <- ifelse(MIVAP30.erg$AP30.len<5,'missing', 
                           MIVAP30.erg$ctg) ##Missung wenn zu wenige Faelle
-MIVAP30.erg$ctg <- ifelse(is.na(MIVAP30.erg$ctg),'missing', MIVAP30.erg$ctg) ##replace NA Values
+MIVAP30.erg$ctg <- ifelse(is.na(MIVAP30.erg$ctg),'missing', MIVAP30.erg$ctg)
 
 #--500--#
-MIVAP30.erg500$ctg <- as.character(cut(MIVAP30.erg500$AP30EW.cv, 
+MIVAP30.erg500$ctg <- as.character(cut(MIVAP30.erg500$AP30.cv, 
                                        breaks = breaks.ctg, 
                                        labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
 MIVAP30.erg500[MIVAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-MIVAP30.erg500$ctg <- ifelse(MIVAP30.erg500$AP30EW.len<3,'missing', 
-                             MIVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
 MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),
-                             'missing', MIVAP30.erg500$ctg) ##replace NA Values
+                             0, MIVAP30.erg500$ctg) ##replace NA Values
+MIVAP30.erg500$ctg <- ifelse(MIVAP30.erg500$AP30.len<2,'missing', 
+                             MIVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
+MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),'missing', MIVAP30.erg500$ctg)

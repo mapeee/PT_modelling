@@ -1,14 +1,13 @@
 #####################################
-#Inhalt:  Test Scripte  	          #
+#Inhalt:  Visualisierung	          #
 #Datum: 	Januar 2018			          #
 #Autor: 	mape			 	              #
 #####################################
-##graphics.off()
-##dev.off()
 
 
 ##--Import Packages--##
 library(rgdal)
+library(ggplot2)
 
 
 ##--Visualisierungen--##
@@ -22,87 +21,51 @@ ctgs.miv <- factor(as.factor(MIVAP30.erg$ctg),
 #0.1 Vorbereitung Daten
 OEVAP30.erg$VZTyp <- ifelse(is.na(OEVAP30.erg$VZTyp),0, OEVAP30.erg$VZTyp) ##replace NA Values
 MIVAP30.erg$VZTyp <- ifelse(is.na(MIVAP30.erg$VZTyp),0, MIVAP30.erg$VZTyp) ##replace NA Values
+OEVAP60.erg$VZTyp <- ifelse(is.na(OEVAP60.erg$VZTyp),0, OEVAP60.erg$VZTyp) ##replace NA Values
+MIVAP60.erg$VZTyp <- ifelse(is.na(MIVAP60.erg$VZTyp),0, MIVAP60.erg$VZTyp) ##replace NA Values
 
 #1. Daten verschneiden
-VZellen.oev.erg <- merge(VZellen, OEVAP30.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
-VZellen.miv.erg <- merge(VZellen, MIVAP30.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
+TAZ.oev.AP30.erg <- merge(VZellen, OEVAP30.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
+TAZ.miv.AP30.erg <- merge(VZellen, MIVAP30.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
+TAZ.oev.AP60.erg <- merge(VZellen, OEVAP60.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
+TAZ.miv.AP60.erg <- merge(VZellen, MIVAP60.erg, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
 
 #2.  Karte
+dev.off()
 par(mfrow=c(2,2)) ##zwei Spalten, zwei Zeilen
-par(mar=c(2,2,0.6,0)) ##Keine Raender
+par(mar=c(2,2,2,2)) ##Keine Raender
 
 #--OEV--#
-plot(VZellen.oev.erg,col=Farbe[ctgs.oev],border=NA)
+plot(TAZ.oev.AP30.erg,col=Farbe[ctgs.oev],border=NA)
 legend("bottomright", legend=levels(ctgs.oev),fill=Farbe)
-plot(VZellen.oev.erg[VZellen.oev.erg$TYPENO==5,],col=Farbe[ctgs.oev],border=NA) ##nur Hamburg
+plot(TAZ.oev.AP30.erg[TAZ.oev.AP30.erg$TYPENO==5,],col=Farbe[ctgs.oev],border=NA) ##nur Hamburg
 
 #--MIV--#
-plot(VZellen.miv.erg,col=Farbe[ctgs.miv],border=NA)
+plot(TAZ.miv.AP30.erg,col=Farbe[ctgs.miv],border=NA)
 legend("bottomright", legend=levels(ctgs.miv),fill=Farbe)
-plot(VZellen.miv.erg[VZellen.miv.erg$TYPENO==5,],col=Farbe[ctgs.miv],border=NA) ##nur Hamburg
+plot(TAZ.miv.AP30.erg[TAZ.miv.AP30.erg$TYPENO==5,],col=Farbe[ctgs.miv],border=NA) ##nur Hamburg
 
 #3. Diagramm
 #--OEV--#
-boxplot(na.omit(OEVAP30.erg$AP30EW.cv)) ##beruecksichtige keine leeren Felder
-boxplot(na.omit(OEVAP30.erg$AP30EW.cv[OEVAP30.erg$VZTyp==4])) ##Plotte nur fur Typ 4
-barplot(table(VZellen.oev.erg$ctg)[levels(ctgs.oev)],
-        names.arg=levels(ctgs.oev),
-        main = "OEV AP30 VZ",
-        ylim = c(0,1000),
-        # yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,
-        col=Farbe,
-        cex.names = 0.8)
-barplot(table(VZellen.oev.erg[VZellen.oev.erg$TYPENO==5,]$ctg)[levels(ctgs.oev)],
-        names.arg=levels(ctgs.oev),
-        main = "OEV AP30 Stat. Gebiete",
-        ylim = c(0,1000),
-        yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,
-        col=Farbe,
-        cex.names = 0.8)
-barplot(table(OEVAP30.erg500[OEVAP30.erg500$ctg!='missing',]$ctg)[levels(ctgs.oev)],
-        names.arg=levels(ctgs.oev),
-        main = "OEV AP30 R500",
-        ylim = c(0,10000),
-        # yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,        
-        col = Farbe,
-        cex.names = 0.8)
+boxplot(na.omit(OEVAP30.erg$AP30.cv)) ##beruecksichtige keine leeren Felder
+boxplot(na.omit(OEVAP30.erg$AP30.cv[OEVAP30.erg$VZTyp==4])) ##Plotte nur fur Typ 4
+
+Visual.mm(TAZ.oev.AP30.erg,ctgs.oev,800,"OEV AP30 VZ","AP30.cv")
+# Visual.mm.g(TAZ.oev.AP30.erg,ctgs.oev,450,"OEV AP30 Gemeinden","AP30.cv",4)
+Visual.mm(TAZ.oev.AP60.erg,ctgs.oev,800,"OEV AP60 VZ","AP60.cv")
+Visual.mm(OEVAP30.erg500,ctgs.oev,15000,"OEV AP30 R500","AP30.cv")
+Visual.mm(OEVAP60.erg500,ctgs.oev,15000,"OEV AP60 R500","AP60.cv")
+# Visual.mm.g(TAZ.oev.AP30.erg,ctgs.oev,450,"OEV AP30 Stat. Gebiete","AP30.cv",5)
+
 
 #--MIV--#
-boxplot(na.omit(MIVAP30.erg[MIVAP30.erg$AP30EW.len>10,]$AP30EW.cv)) ##beruecksichtige keine leeren Felder
-boxplot(na.omit(MIVAP30.erg$AP30EW.cv[MIVAP30.erg$VZTyp==4])) ##Plotte nur fur Typ 4
-barplot(table(MIVAP30.erg$ctg)[levels(ctgs.miv)],
-        names.arg=levels(ctgs.miv),
-        main = "MIV AP30 VZ",
-        ylim = c(0,1000),
-        # yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,
-        col = Farbe,
-        cex.names = 0.8)
-barplot(table(VZellen.miv.erg[VZellen.miv.erg$TYPENO==5,]$ctg)[levels(ctgs.miv)],
-        names.arg=levels(ctgs.miv),
-        main = "MIV AP30 Stat. Gebiete",
-        ylim = c(0,1000),
-        yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,
-        col = Farbe,
-        cex.names = 0.8)
-barplot(table(MIVAP30.erg500[MIVAP30.erg500$ctg!='missing',]$ctg)[levels(ctgs.miv)],
-        names.arg=levels(ctgs.miv),
-        main = "MIV AP30 R500",
-        ylim = c(0,10000),
-        # yaxt='n',
-        xlab = "Kategorie",
-        xpd = FALSE,
-        col = Farbe,
-        cex.names = 0.8)
+boxplot(na.omit(MIVAP30.erg[MIVAP30.erg$AP30.len>10,]$AP30.cv)) ##beruecksichtige keine leeren Felder
+boxplot(na.omit(MIVAP30.erg$AP30.cv[MIVAP30.erg$VZTyp==4])) ##Plotte nur fur Typ 4
+
+Visual.mm(TAZ.miv.AP30.erg,ctgs.miv,2000,"MIV AP30 VZ","AP30.cv")
+Visual.mm(MIVAP30.erg500,ctgs.miv,25000,"MIV AP30 R500","AP30.cv")
+Visual.mm.g(TAZ.miv.AP30.erg,ctgs.miv,450,"MIV AP30 Stat. Gebiete","AP30.cv",5)
+Visual.mm.g(TAZ.miv.AP30.erg,ctgs.miv,700,"MIV AP30 Gemeinden","AP30.cv",4)
 
 #--Ende--#
 dev.copy(png,'Abbildungen/OEV_micro_macro.png',width=1500, height=1000, pointsize=12)
