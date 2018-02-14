@@ -52,13 +52,14 @@ Visual.mm.g <- function(par1,par2,par3,par4,par5,par6,par7){
          at=c(0,250000,500000,750000),
          labels=c("0","250","500","750"))
     rug(x = c(125000,375000,625000), ticksize = -0.02, side = 4,line = -0.4)
-    mtext("Einwohner in Tsd.", side=4,cex=0.7,font=2, line=1.6, col="darkred")
+    mtext("Population (k)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
     
     # text(par("usr")[2],par("usr")[4],adj = c( 1, 4 ),
     #      paste("Einwohner =",as.character(sum(EW$EW))),
     #      cex=1) 
   }
 }
+
   
 Visual.mm <- function(par1,par2,par3,par4,par5,par6){
   werte <- data.frame(table(par1[par1$ctg!='missing',]$ctg)[levels(par2)]);
@@ -111,7 +112,7 @@ Visual.mm <- function(par1,par2,par3,par4,par5,par6){
          at=c(0,250000,500000,750000),
          labels=c("0","250","500","750"))
     rug(x = c(125000,375000,625000), ticksize = -0.02, side = 4,line = -0.4)
-    mtext("Einwohner in Tsd.", side=4,cex=0.7,font=2, line=1.6, col="darkred")
+    mtext("Population (k)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
   }
 }
 

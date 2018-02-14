@@ -115,3 +115,55 @@ MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),
 MIVAP30.erg500$ctg <- ifelse(MIVAP30.erg500$Pkw_AP30.len<2,'missing', 
                              MIVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
 MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),'missing', MIVAP30.erg500$ctg)
+
+
+
+#------------------Fuss--------------------------#
+#Standardabweichung und Mittelwert je Zelle
+FUSSAP30.erg <- do.call(data.frame,aggregate(Fuss_AP30 ~ IDVZelle+TYPENO, AP.Fuss, 
+                                            function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+FUSSAP30.erg500 <- do.call(data.frame,aggregate(Fuss_AP30 ~ ID500, AP.Fuss,
+                                               function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+
+#Berechnung Varianzkoeffizient
+FUSSAP30.erg$FUSS_AP30.cv <- with(FUSSAP30.erg,Fuss_AP30.sd/Fuss_AP30.mean)
+FUSSAP30.erg500$Fuss_AP30.cv <- with(FUSSAP30.erg500,Fuss_AP30.sd/Fuss_AP30.mean)
+
+#Weitere Datenaufbereitung
+FUSSAP30.erg <- merge(FUSSAP30.erg,EWVZ,all.x = T,by = "IDVZelle")[(-7)] ##Merge EW und VZTyp und nimm zweite VZTyp weg
+FUSSAP30.erg$EW <- ifelse(is.na(FUSSAP30.erg$EW),
+                         0, FUSSAP30.erg$EW) 
+
+FUSSAP30.erg[FUSSAP30.erg=="NA"] <- NA
+FUSSAP30.erg[FUSSAP30.erg=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
+
+#--500--#
+FUSSAP30.erg500 <- merge(FUSSAP30.erg500,EW500) ##Merge EW
+
+FUSSAP30.erg500[FUSSAP30.erg500=="NA"] <- NA
+FUSSAP30.erg500[FUSSAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division durch 0 im .cv
+
+#--Kategorisierung--#
+colnames(FUSSAP30.erg) <- c("IDVZelle","VZTyp","Fuss_AP30.len","FUSS_AP30.mean","Fuss_AP30.sd","Fuss_AP30.cv","EW")
+
+#--FUSS--#
+FUSSAP30.erg$ctg <- as.character(cut(FUSSAP30.erg$Fuss_AP30.cv, 
+                                    breaks = breaks.ctg, 
+                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
+FUSSAP30.erg[FUSSAP30.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
+FUSSAP30.erg$ctg <- ifelse(is.na(FUSSAP30.erg$ctg),
+                          0, FUSSAP30.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
+FUSSAP30.erg$ctg <- ifelse(FUSSAP30.erg$Fuss_AP30.len<5,'missing', 
+                          FUSSAP30.erg$ctg) ##Missung wenn zu wenige Faelle
+FUSSAP30.erg$ctg <- ifelse(is.na(FUSSAP30.erg$ctg),'missing', FUSSAP30.erg$ctg) ##Wenn AP30.len NA, dann wird ctg auch wieder NA
+
+#--500--#
+FUSSAP30.erg500$ctg <- as.character(cut(FUSSAP30.erg500$Fuss_AP30.cv, 
+                                       breaks = breaks.ctg, 
+                                       labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
+FUSSAP30.erg500[FUSSAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
+FUSSAP30.erg500$ctg <- ifelse(is.na(FUSSAP30.erg500$ctg),
+                             0, FUSSAP30.erg500$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
+FUSSAP30.erg500$ctg <- ifelse(FUSSAP30.erg500$Fuss_AP30.len<2,'missing', 
+                              FUSSAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
+FUSSAP30.erg500$ctg <- ifelse(is.na(FUSSAP30.erg500$ctg),'missing', FUSSAP30.erg500$ctg)
