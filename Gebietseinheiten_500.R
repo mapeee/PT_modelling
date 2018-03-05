@@ -12,7 +12,7 @@ library(rgdal)
 
 
 #Standardabweichung und Mittelwert je Zelle
-OEVAP30.500.erg <- do.call(data.frame,aggregate(OEV_AP30 ~ IDVZelle+TYPENO, AP30.500, 
+OEVAP30.500.erg <- do.call(data.frame,aggregate(OEV_AP30 ~ IDVZelle+TYPENO, AP30.500[AP30.500$EW>0,], 
                                             function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 
 #Berechnung Varianzkoeffizient
@@ -31,20 +31,17 @@ OEVAP30.500.erg[OEVAP30.500.erg=="NaN"] <- 0 ##Entferne die NaN bei Division dur
 colnames(OEVAP30.500.erg) <- c("IDVZelle","VZTyp","OEV_AP30.len","OEV_AP30.mean","OEV_AP30.sd","OEV_AP30.cv","EW")
 
 #--OEV--#
-OEVAP30.500.erg$ctg <- as.character(cut(OEVAP30.500.erg$OEV_AP30.cv, 
-                                    breaks = breaks.ctg, 
-                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-OEVAP30.500.erg[OEVAP30.500.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-OEVAP30.500.erg$ctg <- ifelse(is.na(OEVAP30.500.erg$ctg),
-                          0, OEVAP30.500.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-OEVAP30.500.erg$ctg <- ifelse(OEVAP30.500.erg$OEV_AP30.len<2,'missing', 
-                              OEVAP30.500.erg$ctg) ##Missung wenn zu wenige Faelle
-OEVAP30.500.erg$ctg <- ifelse(is.na(OEVAP30.500.erg$ctg),'missing', OEVAP30.500.erg$ctg) ##Wenn AP30.len NA, dann wird ctg auch wieder NA
+OEVAP30.500.erg$ctg <- cut(OEVAP30.500.erg$OEV_AP30.cv, 
+                       breaks = breaks.ctg, 
+                       labels = labels.ctg)
+
+levels(OEVAP30.500.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+OEVAP30.500.erg$ctg[OEVAP30.500.erg$OEV_AP30.len<2] <- 'missing'
 
 
 #----MIV----#
 #Standardabweichung und Mittelwert je Zelle
-MIVAP30.500.erg <- do.call(data.frame,aggregate(Pkw_AP30 ~ IDVZelle+TYPENO, AP30.500, 
+MIVAP30.500.erg <- do.call(data.frame,aggregate(Pkw_AP30 ~ IDVZelle+TYPENO, AP30.500[AP30.500$EW>0,], 
                                                 function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 
 #Berechnung Varianzkoeffizient
@@ -63,12 +60,10 @@ MIVAP30.500.erg[MIVAP30.500.erg=="NaN"] <- 0 ##Entferne die NaN bei Division dur
 colnames(MIVAP30.500.erg) <- c("IDVZelle","VZTyp","Pkw_AP30.len","Pkw_AP30.mean","Pkw_AP30.sd","Pkw_AP30.cv","EW")
 
 #--MIV--#
-MIVAP30.500.erg$ctg <- as.character(cut(MIVAP30.500.erg$Pkw_AP30.cv, 
-                                        breaks = breaks.ctg, 
-                                        labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-MIVAP30.500.erg[MIVAP30.500.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-MIVAP30.500.erg$ctg <- ifelse(is.na(MIVAP30.500.erg$ctg),
-                              0, MIVAP30.500.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-MIVAP30.500.erg$ctg <- ifelse(MIVAP30.500.erg$Pkw_AP30.len<2,'missing', 
-                              MIVAP30.500.erg$ctg) ##Missung wenn zu wenige Faelle
-MIVAP30.500.erg$ctg <- ifelse(is.na(MIVAP30.500.erg$ctg),'missing', MIVAP30.500.erg$ctg)
+MIVAP30.500.erg$ctg <- cut(MIVAP30.500.erg$Pkw_AP30.cv, 
+                           breaks = breaks.ctg, 
+                           labels = labels.ctg)
+
+levels(MIVAP30.500.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+MIVAP30.500.erg$ctg[MIVAP30.500.erg$Pkw_AP30.len<2] <- 'missing'
+

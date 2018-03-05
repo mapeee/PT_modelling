@@ -42,26 +42,20 @@ OEVAP30.erg500[OEVAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division durch
 colnames(OEVAP30.erg) <- c("IDVZelle","VZTyp","OEV_AP30.len","OEV_AP30.mean","OEV_AP30.sd","OEV_AP30.cv","EW")
 
 #--OEV--#
-OEVAP30.erg$ctg <- as.character(cut(OEVAP30.erg$OEV_AP30.cv, 
+OEVAP30.erg$ctg <- cut(OEVAP30.erg$OEV_AP30.cv, 
                                     breaks = breaks.ctg, 
-                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-OEVAP30.erg[OEVAP30.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-OEVAP30.erg$ctg <- ifelse(is.na(OEVAP30.erg$ctg),
-                             0, OEVAP30.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-OEVAP30.erg$ctg <- ifelse(OEVAP30.erg$OEV_AP30.len<5,'missing', 
-                          OEVAP30.erg$ctg) ##Missung wenn zu wenige Faelle
-OEVAP30.erg$ctg <- ifelse(is.na(OEVAP30.erg$ctg),'missing', OEVAP30.erg$ctg) ##Wenn AP30.len NA, dann wird ctg auch wieder NA
+                                    labels = labels.ctg)
+
+levels(OEVAP30.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+OEVAP30.erg$ctg[OEVAP30.erg$OEV_AP30.len<5] <- 'missing'
+
 
 #--500--#
-OEVAP30.erg500$ctg <- as.character(cut(OEVAP30.erg500$OEV_AP30.cv, 
-                                    breaks = breaks.ctg, 
-                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-OEVAP30.erg500[OEVAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-OEVAP30.erg500$ctg <- ifelse(is.na(OEVAP30.erg500$ctg),
-                             0, OEVAP30.erg500$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-OEVAP30.erg500$ctg <- ifelse(OEVAP30.erg500$OEV_AP30.len<2,'missing', 
-                             OEVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
-OEVAP30.erg500$ctg <- ifelse(is.na(OEVAP30.erg500$ctg),'missing', OEVAP30.erg500$ctg)
+OEVAP30.erg500$ctg <- cut(OEVAP30.erg500$OEV_AP30.cv,
+                          breaks = breaks.ctg, 
+                          labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(OEVAP30.erg500$ctg) = append(labels.ctg,"missing")
+OEVAP30.erg500$ctg[OEVAP30.erg500$OEV_AP30.len<2] <- 'missing'
 
 
 #------------------MIV--------------------------#
@@ -95,27 +89,20 @@ MIVAP30.erg500[MIVAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division durch
 colnames(MIVAP30.erg) <- c("IDVZelle","VZTyp","Pkw_AP30.len","Pkw_AP30.mean","Pkw_AP30.sd","Pkw_AP30.cv","EW")
 
 #--MIV--#
-MIVAP30.erg$ctg <- as.character(cut(MIVAP30.erg$Pkw_AP30.cv, 
-                                    breaks = breaks.ctg, 
-                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-MIVAP30.erg[MIVAP30.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-MIVAP30.erg$ctg <- ifelse(is.na(MIVAP30.erg$ctg),
-                          0, MIVAP30.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-MIVAP30.erg$ctg <- ifelse(MIVAP30.erg$Pkw_AP30.len<5,'missing', 
-                          MIVAP30.erg$ctg) ##Missung wenn zu wenige Faelle
-MIVAP30.erg$ctg <- ifelse(is.na(MIVAP30.erg$ctg),'missing', MIVAP30.erg$ctg) ##Wenn AP30.len NA, dann wird ctg auch wieder NA
+MIVAP30.erg$ctg <- cut(MIVAP30.erg$Pkw_AP30.cv, 
+                       breaks = breaks.ctg, 
+                       labels = labels.ctg)
+
+levels(MIVAP30.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+MIVAP30.erg$ctg[MIVAP30.erg$Pkw_AP30.len<5] <- 'missing'
+
 
 #--500--#
-MIVAP30.erg500$ctg <- as.character(cut(MIVAP30.erg500$Pkw_AP30.cv, 
-                                       breaks = breaks.ctg, 
-                                       labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-MIVAP30.erg500[MIVAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),
-                             0, MIVAP30.erg500$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-MIVAP30.erg500$ctg <- ifelse(MIVAP30.erg500$Pkw_AP30.len<2,'missing', 
-                             MIVAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
-MIVAP30.erg500$ctg <- ifelse(is.na(MIVAP30.erg500$ctg),'missing', MIVAP30.erg500$ctg)
-
+MIVAP30.erg500$ctg <- cut(MIVAP30.erg500$Pkw_AP30.cv,
+                          breaks = breaks.ctg, 
+                          labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(MIVAP30.erg500$ctg) = append(labels.ctg,"missing")
+MIVAP30.erg500$ctg[MIVAP30.erg500$Pkw_AP30.len<2] <- 'missing'
 
 
 #------------------Fuss--------------------------#
@@ -147,23 +134,18 @@ FUSSAP30.erg500[FUSSAP30.erg500=="NaN"] <- 0 ##Entferne die NaN bei Division dur
 colnames(FUSSAP30.erg) <- c("IDVZelle","VZTyp","Fuss_AP30.len","FUSS_AP30.mean","Fuss_AP30.sd","Fuss_AP30.cv","EW")
 
 #--FUSS--#
-FUSSAP30.erg$ctg <- as.character(cut(FUSSAP30.erg$Fuss_AP30.cv, 
-                                    breaks = breaks.ctg, 
-                                    labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-FUSSAP30.erg[FUSSAP30.erg=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-FUSSAP30.erg$ctg <- ifelse(is.na(FUSSAP30.erg$ctg),
-                          0, FUSSAP30.erg$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-FUSSAP30.erg$ctg <- ifelse(FUSSAP30.erg$Fuss_AP30.len<5,'missing', 
-                          FUSSAP30.erg$ctg) ##Missung wenn zu wenige Faelle
-FUSSAP30.erg$ctg <- ifelse(is.na(FUSSAP30.erg$ctg),'missing', FUSSAP30.erg$ctg) ##Wenn AP30.len NA, dann wird ctg auch wieder NA
+FUSSAP30.erg$ctg <- cut(FUSSAP30.erg$Fuss_AP30.cv, 
+                       breaks = breaks.ctg, 
+                       labels = labels.ctg)
+
+levels(FUSSAP30.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+FUSSAP30.erg$ctg[FUSSAP30.erg$Fuss_AP30.len<5] <- 'missing'
+
 
 #--500--#
-FUSSAP30.erg500$ctg <- as.character(cut(FUSSAP30.erg500$Fuss_AP30.cv, 
-                                       breaks = breaks.ctg, 
-                                       labels = labels.ctg)) ##Um nicht als 'factor' zu speichern
-FUSSAP30.erg500[FUSSAP30.erg500=="NA"] <- NA ##'NA' durch NA, dann ersetzen
-FUSSAP30.erg500$ctg <- ifelse(is.na(FUSSAP30.erg500$ctg),
-                             0, FUSSAP30.erg500$ctg) ##An dieser Stelle damit die NA nach Division durch 0 verschwinden.
-FUSSAP30.erg500$ctg <- ifelse(FUSSAP30.erg500$Fuss_AP30.len<2,'missing', 
-                              FUSSAP30.erg500$ctg) ##Missung wenn zu wenige Faelle, hier 3
-FUSSAP30.erg500$ctg <- ifelse(is.na(FUSSAP30.erg500$ctg),'missing', FUSSAP30.erg500$ctg)
+FUSSAP30.erg500$ctg <- cut(FUSSAP30.erg500$Fuss_AP30.cv,
+                          breaks = breaks.ctg, 
+                          labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(FUSSAP30.erg500$ctg) = append(labels.ctg,"missing")
+FUSSAP30.erg500$ctg[FUSSAP30.erg500$Fuss_AP30.len<2] <- 'missing'
+

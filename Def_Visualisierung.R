@@ -6,113 +6,68 @@
 
 ##Parameter
 #par1 = Datentabelle
-#par2 = Kategorien
-#par3 = Obergrenze der Darstellung
-#par4 = Titel
-#par5 = Indikator
+#par2 = Obergrenze der Darstellung
+#par3 = Titel
+#par4 = Indikator
+#par5 = Mit Einwohnern
 #par6 = Gebietstyp
-#par7 = Mit Einwohnern
-
-
-Visual.mm.g <- function(par1,par2,par3,par4,par5,par6,par7){
-    bars <- barplot(table(subset(par1,(VZTyp==par6&ctg!='missing'))$ctg)[levels(par2)],
-            ylim = c(0,par3),
-            xaxt = 'n',
-            yaxt='n',
-            xpd = FALSE,
-            col=Farbe,
-            cex.names = 0.8);
-  axis(side=2,line = -0.4);
-  mtext("n", side=2,cex=0.7,font=2, line=1.5)
-  axis(1,at=seq(0.7,18,1.2),labels=levels(par2),cex.axis=0.9);
-  title(xlab = "cv",line = 2, font.lab = 2);
-  title(par4, line = 1);
-  xlim0 <- par()$usr[1:2];
-  ylim0 <- c(0,1000000)
-  text(par("usr")[2],par("usr")[4],adj = c( 1, 1 ),
-       labels = paste("n =",as.character(nrow(subset(par1,VZTyp==par6)))),
-       cex=1)
-  text(par("usr")[2],par("usr")[4],adj = c( 1, 2 ),
-       paste("'missings' =",as.character(sum(subset(par1,VZTyp==par6)$ctg=='missing'))),
-       cex=1)
-  text(par("usr")[2],par("usr")[4],adj = c( 1, 3 ),
-       paste("mean cv =",
-             as.character(round(mean((data.frame(par1[par1$ctg!='missing'&par1$VZTyp==par6,])[par5])[[1]]),3))),
-                          cex=1)
-  if(par7==T){
-    EW = aggregate(EW ~ ctg, subset(par1,(VZTyp==par6&ctg!='missing')),sum) ##aufsummieren de rEinwohner ueber ctg
-    EW[length(EW$ctg)+1,] <- EW[1,] ##neue Sortierung, kruecke!!
-    EW <- EW[-1,]
-    # text(x=seq(0.7,18,1.2),y=werte+200,label=EW$EW,font=2)
-    par(new = T)
-    plot.new()
-    plot.window(xlim = xlim0, ylim = ylim0, xaxs = "i",yaxs="i",col.lab="darkred")
-    points(EW$EW ~ bars, col = "darkred",cex=1.1,pch=17)
-    axis(side=4,col="darkred",col.axis="darkred",line = -0.4,
-         at=c(0,250000,500000,750000),
-         labels=c("0","250","500","750"))
-    rug(x = c(125000,375000,625000), ticksize = -0.02, side = 4,line = -0.4)
-    mtext("Population (k)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
-    
-    # text(par("usr")[2],par("usr")[4],adj = c( 1, 4 ),
-    #      paste("Einwohner =",as.character(sum(EW$EW))),
-    #      cex=1) 
-  }
-}
-
   
 Visual.mm <- function(par1,par2,par3,par4,par5,par6){
-  werte <- data.frame(table(par1[par1$ctg!='missing',]$ctg)[levels(par2)]);
-  werte["Var1"] <- levels(par2)
-  werte$Freq <- ifelse(is.na(werte$Freq),0, werte$Freq)
+  if(par6>0){par1 <- par1[par1$VZTyp==par6,]}
   
-  if(par6==T){
-    EW = aggregate(EW ~ ctg, par1[par1$ctg!='missing',],sum)
-    EW <- merge(werte,EW,by.x="Var1",by.y="ctg",all.x = T)
-    EW$EW <- ifelse(is.na(EW$EW),0, EW$EW)
-  }
-  
-  data=werte$Freq
-  names(data)=werte$Var1
-  
-  
-  bars <- barplot(data,
-            # main = par4,
-            ylim = c(0,par3),
-            xaxt = 'n',
-            yaxt='n',
-            xpd = T,
-            col=Farbe,
-            cex.names = 0.8);
-  axis(1,at=seq(0.7,18,1.2),labels=levels(par2),cex.axis=0.9);
+  bars <- barplot(summary(par1$ctg),
+                  # main = par3,
+                  ylim = c(0,max(summary(par1$ctg))*1.2),
+                  xaxt = 'n',
+                  yaxt='n',
+                  xpd = T,
+                  col=Farbe,
+                  cex.names = 0.8);
+  axis(1,at=seq(0.7,length(levels(par1$ctg))*1.2,1.2),labels=levels(par1$ctg),cex.axis=0.9);
   title(xlab = "cv",line = 2, font.lab = 2);
-  title(par4, line = 1);
+  title(par3, line = 1);
   axis(side=2,line = -0.4);
   mtext("n", side=2,cex=0.7,font=2, line=1.5)
   xlim0 <- par()$usr[1:2];
   text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 1 ),
-     labels = paste("n =",as.character(nrow(par1))),
-     cex=1);
-  text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 2 ),
-     labels = paste("'missings' =",as.character(sum(par1$ctg=='missing'))),
-     cex=1);
-  text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 3 ),
-     labels = paste("mean cv =",
-                    as.character(round(mean((data.frame(par1[par1$ctg!='missing',])[par5])[[1]]),3))),
-     cex=1)
-  if(par6==T){
-    EW[length(EW$EW)+1,] <- EW[1,] ##neue Sortierung, kruecke!!
-    EW <- EW[-1,]
-    # text(x=seq(0.7,18,1.2),y=werte+200,label=EW$EW,font=2)
+       labels = paste("n =",as.character(nrow(par1))),
+       cex=1);
+  text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 2.5 ),
+       labels = paste("'missings' =",as.character(sum(par1$ctg=='missing'))),
+       cex=1);
+  text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 4 ),
+       labels = paste("mean cv =",
+                      as.character(round(mean((data.frame(par1[par1$ctg!='missing',])[par4])[[1]]),3))),
+       cex=1);
+  abline(v=1.3, col="royalblue4",lwd=2);
+  abline(v=6.1, col="royalblue4",lwd=2,lty=2)
+  if(par5==T){
+    EW = tapply(par1$EW,par1$ctg,sum)
+    EW[is.na(EW)]<-0
     par(new = T)
     plot.new()
-    plot.window(xlim = xlim0, ylim = c(0,max(EW$EW)+200000), xaxs = "i",yaxs="i",col.lab="darkred")
-    points(EW$EW ~ bars, col = "darkred",cex=1.1,pch=17)
+    plot.window(xlim = xlim0, ylim = c(0,max(EW)+200000), xaxs = "i",yaxs="i",col.lab="darkred")
+    points(EW ~ bars, col = "darkred",cex=1.4,pch=17)
     axis(side=4,col="darkred",col.axis="darkred",line = -0.4,
-         at=c(0,250000,500000,750000),
-         labels=c("0","250","500","750"))
-    rug(x = c(125000,375000,625000), ticksize = -0.02, side = 4,line = -0.4)
+         at=c(0,250000,500000,max(EW)),
+         labels=c("0","250","500",round(max(EW)/1000,0)))
+    rug(x = c(125000,375000), ticksize = -0.02, side = 4,line = -0.4)
     mtext("Population (k)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
   }
 }
 
+
+Visual.karte <- function(par1,par2,par3,par4,par5){
+  #--Daten verschneiden und vorbereiten--#
+  Area <- merge(VZellen, par1, by.x="NO", by.y="IDVZelle") ##VZ ohne Werte bekommen Wert 0
+  Area$ctg <- cut(Area@data[,par2],breaks = breaks.ctg,labels = labels.ctg)
+  levels(Area@data$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+  Area@data$ctg[Area@data[,par3]<par4] <- 'missing'
+  
+  #--Karte plotten--#
+  if(par5>0){plot(Area[Area$TYPENO==par5,],col=Farbe[Area@data$ctg],border=NA);
+    legend("right", legend=levels(Area@data$ctg),fill=Farbe,cex=0.65,box.col = "grey")
+    }
+  else{plot(Area,col=Farbe[Area@data$ctg],border=NA);
+    legend("right", legend=levels(Area@data$ctg),fill=Farbe,cex=0.65,box.col = "grey")}
+}
