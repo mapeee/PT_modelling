@@ -3,84 +3,52 @@
 #Datum: 	Januar 2018			          #
 #Autor: 	mape			 	              #
 #####################################
-
-
 ##--Import Packages--##
 library(rgdal)
+library(xlsx)
+write.xlsx(AP.erg, "c:/Users/mape/Desktop/mydata.xlsx") 
 
 ##--Verbindung zu Geodaten--##
 gdb <- "C:/Geodaten/Material.gdb" #Verbindung zur gdb
-AP30.500 <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Standortqualitaet.gdb",
-                                  layer="E_Arbeitsplaetze_Potenziale_500"))
-AP30.500 <- AP30.500[c("ID","OEV_AP30","Pkw_AP30")] ##Nimm nur diese drei Spalten
-AP30 <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Arbeitsplaetze.gdb",
-                              layer="E_Arbeitsplaetze_Potenziale"))
-AP30 <- AP30[c("ID","OEV_AP30","Pkw_AP30")] ##Nimm nur diese beiden Spalten
 
-# AP.Fuss <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Arbeitsplaetze.gdb",
-#                               layer="E_Fuss_Neu"))
-# AP.Fuss <- AP.Fuss[c("ID","AP15","AP30")] ##Nimm nur diese beiden Spalten
-
-E.Arzt <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Gesundheit.gdb",
-                                layer="E_Hausarzt"))
-E.Arzt <- E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Anbindungszeit","Abgangszeit","Umstiege")] ##Nimm nur diese beiden Spalten
-# E.Arzt <- E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Anbindungszeit","Abgangszeit","Umstiege","StartHst","ZielHst","BH")] ##Nimm nur diese beiden Spalten
-# E.Arzt[E.Arzt$Umstiege<10,]$Minuten_OEV <- (E.Arzt[E.Arzt$Umstiege<10,]$Minuten_OEV-E.Arzt[E.Arzt$Umstiege<10,]$Anbindungszeit)-E.Arzt[E.Arzt$Umstiege<10,]$Abgangszeit
-# E.Arzt[E.Arzt$Minuten_OEV==0,]$Minuten_OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
-E.Arzt <- E.Arzt[-c(5,6,7)]
-
-
-E.OZ <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Raumplanung.gdb",
-                                layer="E_OZ"))
-E.OZ <- E.OZ[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Anbindungszeit","Abgangszeit","Umstiege")] ##Nimm nur diese beiden Spalten
-# E.OZ[E.OZ$Umstiege<10,]$Minuten_OEV <- (E.OZ[E.OZ$Umstiege<10,]$Minuten_OEV-E.OZ[E.OZ$Umstiege<10,]$Anbindungszeit)-E.OZ[E.OZ$Umstiege<10,]$Abgangszeit
-# E.OZ[E.OZ$Minuten_OEV==0,]$Minuten_OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
-E.OZ <- E.OZ[-c(5,6,7)]
-
+#--Gebiete--#
+VZellen <- readOGR(dsn=gdb,layer="MRH_Verkehrszellen_10") ##Verbindung zum Verkehrszellenshape
+VZellen <- VZellen[VZellen$MRH == 1,] ##Nimm nur die Zellen, die in der MRH sind (Untersuchungsgebiet)
 Raster100 <- readOGR(dsn=gdb,layer="MRH_EW_ha")
 Raster100 <- data.frame(Raster100)[c("ID","EW","IDVZelle","ID500")] ##Nimm nur diese Spalten
-Raster100 <- Raster100[Raster100$EW>0,] ##Nimm keine unbewohnten Zellen
+Raster100 <- merge(Raster100,data.frame(VZellen)[c("TYPENO","NO")],by.x="IDVZelle",by.y="NO")[,c(2,3,1,4,5)] ##Merge und Sortierung der Spalten
+
+EW500 <- aggregate(EW ~ ID500, Raster100, sum) ##Berechne Einwohner je 500-Meter-Zelle
+EWVZ <- aggregate(EW ~ IDVZelle+TYPENO, Raster100, sum) ##Berechne Einwohner je Verkehrszelle
 
 Raster500 <- readOGR(dsn=gdb,layer="MRH_500")
 Raster500 <- data.frame(Raster500)[c("ID","IDVZelle")] ##Nimm nur diese Spalten
+Raster500 <- merge(Raster500,EW500,by.x="ID",by.y="ID500",all.x=T)
+Raster500$EW <- ifelse(is.na(Raster500$EW),0, Raster500$EW) ##Setze 0 ein, wenn vorher Fehlwert.
+Raster500 <- merge(Raster500,data.frame(VZellen)[c("TYPENO","NO")],by.x="IDVZelle",by.y="NO")[,c(2,1,3,4)]
 
-VZellen <- readOGR(dsn=gdb,layer="MRH_Verkehrszellen_10") ##Verbindung zum Verkehrszellenshape
-VZellen <- VZellen[VZellen$MRH == 1,] ##Nimm nur die Zellen, die in der MRH sind (Untersuchungsgebiet)
+#--Kumulationsindikatoren--#
+AP.500 <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Standortqualitaet.gdb",layer="E_Arbeitsplaetze_Potenziale_500"))
+AP.500 <- AP.500[c("ID","OEV_AP30","Pkw_AP30","OEV_AP60","Pkw_AP60","Fuss_AP30","Rad_AP30")] ##Nimm nur diese Spalten
+AP.500 <- merge(AP.500,Raster500,by="ID")
 
-##--Aufbereitungen--##
-#EW R500
-EW500 <- aggregate(EW ~ ID500, AP30, sum) ##Berechne Einwohner je 500-Meter-Zelle
-#EW Verkehrszellen
-EWVZ <- aggregate(EW ~ IDVZelle+TYPENO, AP30, sum) ##Berechne Einwohner je Verkehrszelle
+AP <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Arbeitsplaetze.gdb",layer="E_Arbeitsplaetze_Potenziale"))
+AP <- AP[c("ID","OEV_AP30","Pkw_AP30","OEV_AP60","Pkw_AP60","Fuss_AP15","Rad_AP15",
+               "Fuss_AP30","Rad_AP30","OEV_AP05","Pkw_AP05","Fuss_AP05","Rad_AP05")]
+AP <- merge(AP,Raster100,by="ID")
 
-#MErge von Einwohnern, VZID, VZTyp und ID500 an die Ergebnisse
-AP30 <- merge(AP30[c("ID","OEV_AP30","Pkw_AP30")],Raster100[c("ID","EW","IDVZelle","ID500")],by="ID")
-AP30 <- merge(AP30[c("ID","OEV_AP30","Pkw_AP30","EW","IDVZelle","ID500")],
-              data.frame(VZellen)[c("TYPENO","NO")],
-              by.x="IDVZelle",by.y="NO")
+#--Distanzindikatoren--#
+E.Arzt <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Gesundheit.gdb",layer="E_Hausarzt"))
+E.Arzt <- E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Minuten_Fuss","Minuten_Rad",
+                   "Anbindungszeit","Abgangszeit","Umstiege","Verbindungen")]
+E.Arzt <- merge(E.Arzt,Raster100,by="ID")
 
-#EW R500
-EW500 <- aggregate(EW ~ ID500, AP30, sum) ##Berechne Einwohner je 500-Meter-Zelle
-#EW Verkehrszellen
-EWVZ <- aggregate(EW ~ IDVZelle+TYPENO, AP30, sum) ##Berechne Einwohner je Verkehrszelle
+E.OZ <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Raumplanung.gdb",layer="E_OZ"))
+E.OZ <- E.OZ[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Minuten_Rad",
+              "Anbindungszeit","Abgangszeit","Umstiege","Verbindungen")]
+E.OZ <- merge(E.OZ,Raster100,by="ID")
 
-# AP.Fuss <- merge(AP.Fuss[c("ID","AP15","AP30")],Raster100[c("ID","EW","IDVZelle","ID500")],by="ID")
-# AP.Fuss <- merge(AP.Fuss[c("ID","AP15","AP30","EW","IDVZelle","ID500")],
-#               data.frame(VZellen)[c("TYPENO","NO")],
-#               by.x="IDVZelle",by.y="NO")
-# colnames(AP.Fuss) <- c("IDVZelle","ID","Fuss_AP15","Fuss_AP30","EW","ID500","TYPENO")
-
-
-E.Arzt <- merge(E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw")],Raster100[c("ID","IDVZelle","ID500")],by="ID")
-E.Arzt <- merge(E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","IDVZelle","ID500")],
-                data.frame(VZellen)[c("TYPENO","NO")],
-                by.x="IDVZelle",by.y="NO")
-E.OZ <- merge(E.OZ[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw")],Raster100[c("ID","IDVZelle","ID500")],by="ID")
-E.OZ <- merge(E.OZ[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","IDVZelle","ID500")],
-                data.frame(VZellen)[c("TYPENO","NO")],
-                by.x="IDVZelle",by.y="NO")
-AP30.500 <- merge(AP30.500,EW500, by.x = "ID", by.y = "ID500",all=T)
-AP30.500 <- merge(AP30.500,Raster500, by = "ID")
-AP30.500 <- merge(AP30.500,data.frame(VZellen)[c("TYPENO","NO")],by.x="IDVZelle",by.y="NO",all.x=T)
-AP30.500$EW <- ifelse(is.na(AP30.500$EW),
-                              0, AP30.500$EW)
+#--Removes--#
+remove(gdb)
+remove(Raster100,Raster500)
+remove(EWVZ,EW500)

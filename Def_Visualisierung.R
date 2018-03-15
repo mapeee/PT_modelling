@@ -12,18 +12,18 @@
 #par5 = Mit Einwohnern
 #par6 = Gebietstyp
   
-Visual.mm <- function(par1,par2,par3,par4,par5,par6){
+Visual.mm <- function(par1,par2,par3,par4,par5,par6,par7){
   if(par6>0){par1 <- par1[par1$VZTyp==par6,]}
   
-  bars <- barplot(summary(par1$ctg),
+  bars <- barplot(summary(par1[,par7]),
                   # main = par3,
-                  ylim = c(0,max(summary(par1$ctg))*1.2),
+                  ylim = c(0,max(summary(par1[,par7]))*1.2),
                   xaxt = 'n',
                   yaxt='n',
                   xpd = T,
                   col=Farbe,
                   cex.names = 0.8);
-  axis(1,at=seq(0.7,length(levels(par1$ctg))*1.2,1.2),labels=levels(par1$ctg),cex.axis=0.9);
+  axis(1,at=seq(0.7,length(levels(par1[,par7]))*1.2,1.2),labels=levels(par1[,par7]),cex.axis=0.9);
   title(xlab = "cv",line = 2, font.lab = 2);
   title(par3, line = 1);
   axis(side=2,line = -0.4);
@@ -33,16 +33,16 @@ Visual.mm <- function(par1,par2,par3,par4,par5,par6){
        labels = paste("n =",as.character(nrow(par1))),
        cex=1);
   text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 2.5 ),
-       labels = paste("'missings' =",as.character(sum(par1$ctg=='missing'))),
+       labels = paste("'missings' =",as.character(sum(par1[,par7]=='missing'))),
        cex=1);
   text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 4 ),
        labels = paste("mean cv =",
-                      as.character(round(mean((data.frame(par1[par1$ctg!='missing',])[par4])[[1]]),3))),
+                      as.character(round(mean((data.frame(par1[par1[,par7]!='missing',])[par4])[[1]]),3))),
        cex=1);
   abline(v=1.3, col="royalblue4",lwd=2);
   abline(v=6.1, col="royalblue4",lwd=2,lty=2)
   if(par5==T){
-    EW = tapply(par1$EW,par1$ctg,sum)
+    EW = tapply(par1$EW,par1[,par7],sum)
     EW[is.na(EW)]<-0
     par(new = T)
     plot.new()

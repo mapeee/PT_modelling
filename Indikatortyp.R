@@ -6,160 +6,167 @@
 
 ##--Import Packages--##
 library(rgdal)
+library(plyr)
+# E.Arzt.erg[E.Arzt.erg$Umstiege<10,]$Minuten_OEV <- (E.Arzt.zugang[E.Arzt.zugang$Umstiege<10,]$Minuten_OEV-E.Arzt.zugang[E.Arzt.zugang$Umstiege<10,]$Anbindungszeit)-E.Arzt.zugang[E.Arzt.zugang$Umstiege<10,]$Abgangszeit
+# E.Arzt.erg[E.Arzt.erg$Minuten_OEV==0,]$Minuten_OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 
-#--Arzt--#
-#Weitere Eingrenzungen
-OEVArzt <- E.Arzt
-OEVArzt[OEVArzt$Minuten_OEV>120,]$Minuten_OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+#--Distanz Indikatoren--#
+#------Arzt
+E.Arzt.erg <- E.Arzt
+E.Arzt.erg <- rename(E.Arzt.erg, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.Arzt.erg[E.Arzt.erg$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+OEVArzt.erg <- do.call(data.frame,aggregate(OEV ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+PkwArzt.erg <- do.call(data.frame,aggregate(Pkw ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+FussArzt.erg <- do.call(data.frame,aggregate(Fuss ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+RadArzt.erg <- do.call(data.frame,aggregate(Rad ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 
-#Standardabweichung und Mittelwert je Zelle
-OEVArzt.erg <- do.call(data.frame,aggregate(Minuten_OEV ~ IDVZelle+TYPENO, OEVArzt, 
-                                            function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(OEVArzt.erg) <- c("IDVZelle","VZTyp","OEV_Arzt.len","OEV_Arzt.mean","OEV_Arzt.sd")
-
-OEVArzt.erg500 <- do.call(data.frame,aggregate(Minuten_OEV ~ ID500, OEVArzt, 
-                                            function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(OEVArzt.erg500) <- c("ID500","OEV_Arzt.len","OEV_Arzt.mean","OEV_Arzt.sd")
-
-#Berechnung Varianzkoeffizient
-OEVArzt.erg$OEV_Arzt.cv <- with(OEVArzt.erg,OEV_Arzt.sd/OEV_Arzt.mean)
-OEVArzt.erg500$OEV_Arzt.cv <- with(OEVArzt.erg500,OEV_Arzt.sd/OEV_Arzt.mean)
-
-#Weitere Datenaufbereitung
-OEVArzt.erg <- (merge(OEVArzt.erg,EWVZ,all.x = T))[-c(7)] ##Merge EW und loesche die Spalte Vzellen Typ
-OEVArzt.erg500 <- merge(OEVArzt.erg500,EW500) ##Merge EW
-
-#Kategorisierung
-OEVArzt.erg$ctg <- cut(OEVArzt.erg$OEV_Arzt.cv, 
-                              breaks = breaks.ctg, 
-                              labels = labels.ctg) ##Um nicht als 'factor' zu speichern
-levels(OEVArzt.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
-OEVArzt.erg$ctg[OEVArzt.erg$OEV_Arzt.len<5] <- 'missing'
-
-
-
-#--500--#
-OEVArzt.erg500$ctg <- cut(OEVArzt.erg500$OEV_Arzt.cv, 
-                                       breaks = breaks.ctg, 
-                                       labels = labels.ctg)
-levels(OEVArzt.erg500$ctg) = append(labels.ctg,"missing")
-OEVArzt.erg500$ctg[OEVArzt.erg500$OEV_Arzt.len<2] <- 'missing'
-
-
-
-#--Oberzentrum--#
-#Weitere Eingrenzungen
-OEVOZ <- E.OZ
-OEVOZ[OEVOZ$Minuten_OEV>120,]$Minuten_OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
-
-#Standardabweichung und Mittelwert je Zelle
-OEVOZ.erg <- do.call(data.frame,aggregate(Minuten_OEV ~ IDVZelle+TYPENO, OEVOZ, 
-                                            function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(OEVOZ.erg) <- c("IDVZelle","VZTyp","OEV_OZ.len","OEV_OZ.mean","OEV_OZ.sd")
-
-OEVOZ.erg500 <- do.call(data.frame,aggregate(Minuten_OEV ~ ID500, OEVOZ, 
-                                               function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(OEVOZ.erg500) <- c("ID500","OEV_OZ.len","OEV_OZ.mean","OEV_OZ.sd")
+E.Arzt.erg <- merge(OEVArzt.erg,PkwArzt.erg)
+E.Arzt.erg <- merge(E.Arzt.erg,FussArzt.erg)
+E.Arzt.erg <- merge(E.Arzt.erg,RadArzt.erg)
+E.Arzt.erg <- merge(E.Arzt.erg,EWVZ)
+remove(OEVArzt.erg,PkwArzt.erg,FussArzt.erg,RadArzt.erg)
 
 #Berechnung Varianzkoeffizient
-OEVOZ.erg$OEV_OZ.cv <- with(OEVOZ.erg,OEV_OZ.sd/OEV_OZ.mean)
-OEVOZ.erg500$OEV_OZ.cv <- with(OEVOZ.erg500,OEV_OZ.sd/OEV_OZ.mean)
-
-#Weitere Datenaufbereitung
-OEVOZ.erg <- (merge(OEVOZ.erg,EWVZ,all.x = T))[-c(7)] ##Merge EW und loesche die Spalte Vzellen Typ
-OEVOZ.erg500 <- merge(OEVOZ.erg500,EW500) ##Merge EW
+E.Arzt.erg$OEV.cv <- with(E.Arzt.erg,OEV.sd/OEV.mean)
+E.Arzt.erg$Pkw.cv <- with(E.Arzt.erg,OEV.sd/Pkw.mean)
+E.Arzt.erg$Fuss.cv <- with(E.Arzt.erg,OEV.sd/Fuss.mean)
+E.Arzt.erg$Rad.cv <- with(E.Arzt.erg,OEV.sd/Rad.mean)
 
 #Kategorisierung
-OEVOZ.erg$ctg <- cut(OEVOZ.erg$OEV_OZ.cv, 
-                       breaks = breaks.ctg, 
-                       labels = labels.ctg) ##Um nicht als 'factor' zu speichern
-levels(OEVOZ.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
-OEVOZ.erg$ctg[OEVOZ.erg$OEV_OZ.len<5] <- 'missing'
+#OEV
+E.Arzt.erg$OEV.ctg <- cut(E.Arzt.erg$OEV.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg$OEV.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg$OEV.ctg[E.Arzt.erg$OEV.len<5] <- 'missing'
+#Pkw
+E.Arzt.erg$Pkw.ctg <- cut(E.Arzt.erg$Pkw.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg$Pkw.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg$Pkw.ctg[E.Arzt.erg$Pkw.len<5] <- 'missing'
+#Fuss
+E.Arzt.erg$Fuss.ctg <- cut(E.Arzt.erg$Fuss.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg$Fuss.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg$Fuss.ctg[E.Arzt.erg$Fuss.len<5] <- 'missing'
+#Rad
+E.Arzt.erg$Rad.ctg <- cut(E.Arzt.erg$Rad.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg$Rad.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg$Rad.ctg[E.Arzt.erg$Rad.len<5] <- 'missing'
 
 
-#--500--#
-OEVOZ.erg500$ctg <- cut(OEVOZ.erg500$OEV_OZ.cv, 
-                          breaks = breaks.ctg, 
-                          labels = labels.ctg)
-levels(OEVOZ.erg500$ctg) = append(labels.ctg,"missing")
-OEVOZ.erg500$ctg[OEVOZ.erg500$OEV_OZ.len<2] <- 'missing'
+#------OZ
+E.OZ.erg <- E.OZ
+E.OZ.erg <- rename(E.OZ.erg, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.OZ.erg[E.OZ.erg$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+OEVOZ.erg <- do.call(data.frame,aggregate(OEV ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+PkwOZ.erg <- do.call(data.frame,aggregate(Pkw ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+RadOZ.erg <- do.call(data.frame,aggregate(Rad ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 
-
-
-
-#--MIV--#
-#--Arzt--#
-#Weitere Eingrenzungen
-MIVArzt <- E.Arzt
-MIVArzt[MIVArzt$Minuten_Pkw>120,]$Minuten_Pkw <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
-
-#Standardabweichung und Mittelwert je Zelle
-MIVArzt.erg <- do.call(data.frame,aggregate(Minuten_Pkw ~ IDVZelle+TYPENO, MIVArzt, 
-                                            function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(MIVArzt.erg) <- c("IDVZelle","VZTyp","MIV_Arzt.len","MIV_Arzt.mean","MIV_Arzt.sd")
-
-MIVArzt.erg500 <- do.call(data.frame,aggregate(Minuten_Pkw ~ ID500, MIVArzt, 
-                                               function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(MIVArzt.erg500) <- c("ID500","MIV_Arzt.len","MIV_Arzt.mean","MIV_Arzt.sd")
+E.OZ.erg <- merge(OEVOZ.erg,PkwOZ.erg)
+E.OZ.erg <- merge(E.OZ.erg,RadOZ.erg)
+E.OZ.erg <- merge(E.OZ.erg,EWVZ)
+remove(OEVOZ.erg,PkwOZ.erg,RadOZ.erg)
 
 #Berechnung Varianzkoeffizient
-MIVArzt.erg$MIV_Arzt.cv <- with(MIVArzt.erg,MIV_Arzt.sd/MIV_Arzt.mean)
-MIVArzt.erg500$MIV_Arzt.cv <- with(MIVArzt.erg500,MIV_Arzt.sd/MIV_Arzt.mean)
-
-#Weitere Datenaufbereitung
-MIVArzt.erg <- (merge(MIVArzt.erg,EWVZ,all.x = T))[-c(7)] ##Merge EW und loesche die Spalte Vzellen Typ
-MIVArzt.erg500 <- merge(MIVArzt.erg500,EW500) ##Merge EW
+E.OZ.erg$OEV.cv <- with(E.OZ.erg,OEV.sd/OEV.mean)
+E.OZ.erg$Pkw.cv <- with(E.OZ.erg,OEV.sd/Pkw.mean)
+E.OZ.erg$Rad.cv <- with(E.OZ.erg,OEV.sd/Rad.mean)
 
 #Kategorisierung
-MIVArzt.erg$ctg <- cut(MIVArzt.erg$MIV_Arzt.cv, 
-                       breaks = breaks.ctg, 
-                       labels = labels.ctg) ##Um nicht als 'factor' zu speichern
-levels(MIVArzt.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
-MIVArzt.erg$ctg[MIVArzt.erg$MIV_Arzt.len<5] <- 'missing'
+#OEV
+E.OZ.erg$OEV.ctg <- cut(E.OZ.erg$OEV.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg$OEV.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg$OEV.ctg[E.OZ.erg$OEV.len<5] <- 'missing'
+#Pkw
+E.OZ.erg$Pkw.ctg <- cut(E.OZ.erg$Pkw.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg$Pkw.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg$Pkw.ctg[E.OZ.erg$Pkw.len<5] <- 'missing'
+#Rad
+E.OZ.erg$Rad.ctg <- cut(E.OZ.erg$Rad.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg$Rad.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg$Rad.ctg[E.OZ.erg$Rad.len<5] <- 'missing'
 
 
 
-#--500--#
-MIVArzt.erg500$ctg <- cut(MIVArzt.erg500$MIV_Arzt.cv, 
-                          breaks = breaks.ctg, 
-                          labels = labels.ctg)
-levels(MIVArzt.erg500$ctg) = append(labels.ctg,"missing")
-MIVArzt.erg500$ctg[MIVArzt.erg500$MIV_Arzt.len<2] <- 'missing'
 
+#--------------500------------------#
+#------Arzt
+E.Arzt.erg500 <- E.Arzt
+E.Arzt.erg500 <- rename(E.Arzt.erg500, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.Arzt.erg500[E.Arzt.erg500$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+OEVArzt.erg <- do.call(data.frame,aggregate(OEV ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+PkwArzt.erg <- do.call(data.frame,aggregate(Pkw ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+FussArzt.erg <- do.call(data.frame,aggregate(Fuss ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+RadArzt.erg <- do.call(data.frame,aggregate(Rad ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 
-#--OZ--#
-#Weitere Eingrenzungen
-MIVOZ <- E.OZ
-MIVOZ[MIVOZ$Minuten_Pkw>120,]$Minuten_Pkw <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
-
-#Standardabweichung und Mittelwert je Zelle
-MIVOZ.erg <- do.call(data.frame,aggregate(Minuten_Pkw ~ IDVZelle+TYPENO, MIVOZ, 
-                                          function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(MIVOZ.erg) <- c("IDVZelle","VZTyp","MIV_OZ.len","MIV_OZ.mean","MIV_OZ.sd")
-
-MIVOZ.erg500 <- do.call(data.frame,aggregate(Minuten_Pkw ~ ID500, MIVOZ, 
-                                             function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
-colnames(MIVOZ.erg500) <- c("ID500","MIV_OZ.len","MIV_OZ.mean","MIV_OZ.sd")
+E.Arzt.erg500 <- merge(OEVArzt.erg,PkwArzt.erg)
+E.Arzt.erg500 <- merge(E.Arzt.erg500,FussArzt.erg)
+E.Arzt.erg500 <- merge(E.Arzt.erg500,RadArzt.erg)
+E.Arzt.erg500 <- merge(E.Arzt.erg500,EW500)
+remove(OEVArzt.erg,PkwArzt.erg,FussArzt.erg,RadArzt.erg)
 
 #Berechnung Varianzkoeffizient
-MIVOZ.erg$MIV_OZ.cv <- with(MIVOZ.erg,MIV_OZ.sd/MIV_OZ.mean)
-MIVOZ.erg500$MIV_OZ.cv <- with(MIVOZ.erg500,MIV_OZ.sd/MIV_OZ.mean)
-
-#Weitere Datenaufbereitung
-MIVOZ.erg <- (merge(MIVOZ.erg,EWVZ,all.x = T))[-c(7)] ##Merge EW und loesche die Spalte Vzellen Typ
-MIVOZ.erg500 <- merge(MIVOZ.erg500,EW500) ##Merge EW
+E.Arzt.erg500$OEV.cv <- with(E.Arzt.erg500,OEV.sd/OEV.mean)
+E.Arzt.erg500$Pkw.cv <- with(E.Arzt.erg500,OEV.sd/Pkw.mean)
+E.Arzt.erg500$Fuss.cv <- with(E.Arzt.erg500,OEV.sd/Fuss.mean)
+E.Arzt.erg500$Rad.cv <- with(E.Arzt.erg500,OEV.sd/Rad.mean)
 
 #Kategorisierung
-MIVOZ.erg$ctg <- cut(MIVOZ.erg$MIV_OZ.cv, 
-                     breaks = breaks.ctg, 
-                     labels = labels.ctg) ##Um nicht als 'factor' zu speichern
-levels(MIVOZ.erg$ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
-MIVOZ.erg$ctg[MIVOZ.erg$MIV_OZ.len<5] <- 'missing'
+#OEV
+E.Arzt.erg500$OEV.ctg <- cut(E.Arzt.erg500$OEV.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg500$OEV.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg500$OEV.ctg[E.Arzt.erg500$OEV.len<2] <- 'missing'
+#Pkw
+E.Arzt.erg500$Pkw.ctg <- cut(E.Arzt.erg500$Pkw.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg500$Pkw.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg500$Pkw.ctg[E.Arzt.erg500$Pkw.len<2] <- 'missing'
+#Fuss
+E.Arzt.erg500$Fuss.ctg <- cut(E.Arzt.erg500$Fuss.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg500$Fuss.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg500$Fuss.ctg[E.Arzt.erg500$Fuss.len<2] <- 'missing'
+#Rad
+E.Arzt.erg500$Rad.ctg <- cut(E.Arzt.erg500$Rad.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.Arzt.erg500$Rad.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.Arzt.erg500$Rad.ctg[E.Arzt.erg500$Rad.len<2] <- 'missing'
 
 
-#--500--#
-MIVOZ.erg500$ctg <- cut(MIVOZ.erg500$MIV_OZ.cv, 
-                        breaks = breaks.ctg, 
-                        labels = labels.ctg)
-levels(MIVOZ.erg500$ctg) = append(labels.ctg,"missing")
-MIVOZ.erg500$ctg[MIVOZ.erg500$MIV_OZ.len<2] <- 'missing'
+#------OZ
+E.OZ.erg500 <- E.OZ
+E.OZ.erg500 <- rename(E.OZ.erg500, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Rad"="Rad"))
+E.OZ.erg500[E.OZ.erg500$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+OEVOZ.erg <- do.call(data.frame,aggregate(OEV ~ ID500, E.OZ.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+PkwOZ.erg <- do.call(data.frame,aggregate(Pkw ~ ID500, E.OZ.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+RadOZ.erg <- do.call(data.frame,aggregate(Rad ~ ID500, E.OZ.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
+
+E.OZ.erg500 <- merge(OEVOZ.erg,PkwOZ.erg)
+E.OZ.erg500 <- merge(E.OZ.erg500,RadOZ.erg)
+E.OZ.erg500 <- merge(E.OZ.erg500,EW500)
+remove(OEVOZ.erg,PkwOZ.erg,FussOZ.erg,RadOZ.erg)
+
+#Berechnung Varianzkoeffizient
+E.OZ.erg500$OEV.cv <- with(E.OZ.erg500,OEV.sd/OEV.mean)
+E.OZ.erg500$Pkw.cv <- with(E.OZ.erg500,OEV.sd/Pkw.mean)
+E.OZ.erg500$Rad.cv <- with(E.OZ.erg500,OEV.sd/Rad.mean)
+
+#Kategorisierung
+#OEV
+E.OZ.erg500$OEV.ctg <- cut(E.OZ.erg500$OEV.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg500$OEV.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg500$OEV.ctg[E.OZ.erg500$OEV.len<2] <- 'missing'
+#Pkw
+E.OZ.erg500$Pkw.ctg <- cut(E.OZ.erg500$Pkw.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg500$Pkw.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg500$Pkw.ctg[E.OZ.erg500$Pkw.len<2] <- 'missing'
+#Rad
+E.OZ.erg500$Rad.ctg <- cut(E.OZ.erg500$Rad.cv, breaks = breaks.ctg,labels = labels.ctg) ##Um nicht als 'factor' zu speichern
+levels(E.OZ.erg500$Rad.ctg) = append(labels.ctg,"missing") ##Füge zusätzliche Kategorie ein, um anschl. missings vergeben zu können
+E.OZ.erg500$Rad.ctg[E.OZ.erg500$Rad.len<2] <- 'missing'
+
+
+
+
+
+
+
+
+
+
+
+

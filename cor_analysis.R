@@ -5,17 +5,17 @@
 #####################################
 #Korrelation zwischen dem cv, und verschiedenen Parametern (bspw. Flaeche und Einwohnerzahl)
 
-cor.analyse <- function(par1,par2,par3){
+cor.analyse <- function(par1,par2,par3,par4){
   #--Daten verschneiden und vorbereiten--#
   if(par3=="Shape_Area"){
     Area <- as.data.frame(merge(VZellen, par1, by.x="NO", by.y="IDVZelle")) ##VZ ohne Werte bekommen Wert 0
-    Area <- Area[Area$ctg!='missing',] ##keine Beruesichtigung von 'missings'
+    Area <- Area[Area[,par4]!='missing',] ##keine Beruesichtigung von 'missings'
     Area <- na.omit(Area) ##keine Beruecksichtigung von NAs
     print(paste("cor: ",par2," / ",par3))
     cor(Area[,par2],Area[,par3])
     }
   else{ ##wenn es nicht um Flaechen geht, wird keine Flaeche gejoined!!
-    Area <- par1[par1$ctg!='missing',] ##keine Beruesichtigung von 'missings'
+    Area <- par1[par1[,par4]!='missing',] ##keine Beruesichtigung von 'missings'
     Area <- Area[complete.cases(Area[c(par2,par3)]),c(par2,par3)] ##keine Beruecksichtigung von NAs
     print(paste("cor: ",par2," / ",par3))
     cor(Area[,par2],Area[,par3])
@@ -23,13 +23,20 @@ cor.analyse <- function(par1,par2,par3){
   }
 
 #--Analyse--#
-cor.analyse(OEVAP30.erg,"OEV_AP30.cv","Shape_Area")
-cor.analyse(OEVAP30.erg,"OEV_AP30.cv","EW")
-cor.analyse(OEVAP30.erg,"OEV_AP30.cv","OEV_AP30.len")
-cor.analyse(OEVAP30.erg500,"OEV_AP30.cv","EW")
-cor.analyse(OEVAP60.erg,"OEV_AP60.cv","Shape_Area")
-cor.analyse(OEVAP60.erg,"OEV_AP60.cv","EW")
-cor.analyse(MIVAP30.erg,"Pkw_AP30.cv","Shape_Area")
+cor.analyse(AP.erg,"OEV_AP30.cv","Shape_Area","OEV_AP30.ctg")
+cor.analyse(AP.erg,"Pkw_AP30.cv","Shape_Area","Pkw_AP30.ctg")
+cor.analyse(AP.erg,"Fuss_AP30.cv","Shape_Area","Fuss_AP30.ctg")
+cor.analyse(AP.erg,"Rad_AP30.cv","Shape_Area","Rad_AP30.ctg")
+cor.analyse(AP.erg,"OEV_AP30.cv","EW","OEV_AP30.ctg")
+cor.analyse(AP.erg,"OEV_AP30.cv","OEV_AP30.len","OEV_AP30.ctg")
+cor.analyse(AP.erg500,"OEV_AP30.cv","EW","OEV_AP30.ctg")
+cor.analyse(AP.erg,"OEV_AP60.cv","Shape_Area","OEV_AP60.ctg")
+cor.analyse(AP.erg,"OEV_AP60.cv","EW","OEV_AP60.ctg")
+
+
+cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","Shape_Area")
+cor.analyse(MIVArzt.erg,"MIV_Arzt.cv","Shape_Area")
+cor.analyse(MIVOZ.erg,"MIV_OZ.cv","Shape_Area")
 
 cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","Hst.len")
 cor.analyse(OEVArzt.erg500,"OEV_Arzt.cv","Hst.len")
