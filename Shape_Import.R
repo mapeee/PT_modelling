@@ -6,7 +6,7 @@
 ##--Import Packages--##
 library(rgdal)
 library(xlsx)
-write.xlsx(AP.erg, "c:/Users/mape/Desktop/mydata.xlsx") 
+# write.xlsx(E.Arzt.erg, "c:/Users/mape/Desktop/mydata.xlsx") 
 
 ##--Verbindung zu Geodaten--##
 gdb <- "C:/Geodaten/Material.gdb" #Verbindung zur gdb
@@ -39,8 +39,8 @@ AP <- merge(AP,Raster100,by="ID")
 
 #--Distanzindikatoren--#
 E.Arzt <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Gesundheit.gdb",layer="E_Hausarzt"))
-E.Arzt <- E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Minuten_Fuss","Minuten_Rad",
-                   "Anbindungszeit","Abgangszeit","Umstiege","Verbindungen")]
+E.Arzt <- E.Arzt[c("ID","Einwohner","Minuten_OEV","Minuten_Pkw","Minuten_Fuss","Minuten_Rad","Meter_Pkw","Meter_NMIV",
+                   "Anbindungszeit","Abgangszeit","Umstiege","Verbindungen","StartHst")]
 E.Arzt <- merge(E.Arzt,Raster100,by="ID")
 
 E.OZ <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Raumplanung.gdb",layer="E_OZ"))

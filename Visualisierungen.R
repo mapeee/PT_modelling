@@ -29,8 +29,7 @@ par(mar=c(3.5,2.2,3.5,4.0)) ##Keine Raender
 par(mfrow=c(4,1)) ##zwei Spalten, zwei Zeilen
 
 #Karten
-#--OEV--#
-Visual.karte(AP.erg,"OEV_AP30.cv","OEV_AP30.len",5,0)
+Visual.karte(E.OZ.erg,"Rad.cv","Rad.len",5,0)
 Visual.karte(AP.erg,"OEV_AP30.cv","OEV_AP30.len",5,5)
 
 
@@ -72,13 +71,21 @@ Visual.mm(AP.erg500,12000,"Bike Jobs 30min R500","Rad_AP30.cv",T,0,"Rad_AP30.ctg
 #sd500 sd100
 Visual.mm(AP.sd500erg,13000,"PT Jobs 30min sd500","OEVAP30.sd500.cv",T,0,"OEVAP30.ctg")
 Visual.mm(AP.sd500erg,13000,"Car Jobs 30min sd500","PkwAP30.sd500.cv",T,0,"PkwAP30.ctg")
+Visual.mm(AP.sd500erg,13000,"Walk Jobs 30min sd500","FussAP30.sd500.cv",T,0,"FussAP30.ctg")
+Visual.mm(AP.sd500erg,13000,"Bike Jobs 30min sd500","RadAP30.sd500.cv",T,0,"RadAP30.ctg")
+
+#Potential
+Visual.mm(AP.erg,600,"Bike Jobs 30min Study area","Rad_AP05.cv",T,0,"Rad_AP05.ctg")
+Visual.mm(AP.erg,600,"Walk Jobs 30min Study area","Fuss_AP05.cv",T,0,"Fuss_AP05.ctg")
+
+
 
 #Aufwandsindikator
 #--OEV--#
 #--Arzt--#
 Visual.mm(E.Arzt.erg,400,"PT next doctor Study area","OEV.cv",T,0,"OEV.ctg")
 Visual.mm(E.Arzt.erg,400,"PT next doctor Municipality","OEV.cv",T,4,"OEV.ctg")
-Visual.mm(E.Arzt.erg,400,"PT next doctor Hamburg (statistical areas)","OEV.cv",T,5,"OEV.ctg")
+Visual.mm(E.Arzt.erg,40000,"PT next doctor Hamburg (statistical areas)","OEV.cv",T,5,"OEV.ctg")
 Visual.mm(E.Arzt.erg500,11000,"PT next doctor R500","OEV.cv",T,0,"OEV.ctg")
 #--OZ--#
 Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Study area","OEV_OZ.cv",T,0)
@@ -87,10 +94,10 @@ Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Hamburg (statistical areas)
 Visual.mm(OEVOZ.erg500,11000,"PT next regional metropolis R500","OEV_OZ.cv",T,0)
 #--Pkw--#
 #--Arzt--#
-Visual.mm(PkwArzt.erg,400,"Car next doctor Study area","Pkw_Arzt.cv",T,0)
-Visual.mm(PkwArzt.erg,400,"Car next doctor Municipality","Pkw_Arzt.cv",T,4)
-Visual.mm(PkwArzt.erg,400,"Car next doctor Hamburg (statistical areas)","Pkw_Arzt.cv",T,5)
-Visual.mm(PkwArzt.erg500,11000,"Car next doctor R500","Pkw_Arzt.cv",T,0)
+Visual.mm(E.Arzt.erg,400,"Car next doctor Study area","Pkw.cv",T,0)
+Visual.mm(E.Arzt.erg,400,"Car next doctor Municipality","Pkw.cv",T,4)
+Visual.mm(E.Arzt.erg,400,"Car next doctor Hamburg (statistical areas)","Pkw.cv",T,5,"Pkw.ctg")
+Visual.mm(E.Arzt.erg500,11000,"Car next doctor R500","Pkw.cv",T,0)
 #--OZ--#
 Visual.mm(PkwOZ.erg,400,"Car next regional metropolis Study area","Pkw_OZ.cv",T,0)
 Visual.mm(PkwOZ.erg,400,"Car next regional metropolis Municipality","Pkw_OZ.cv",T,4)

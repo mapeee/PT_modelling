@@ -4,6 +4,9 @@
 #Autor: 	mape			 	              #
 #####################################
 #Korrelation zwischen dem cv, und verschiedenen Parametern (bspw. Flaeche und Einwohnerzahl)
+##--Import Packages--##
+library(rgdal)
+library(plyr)
 
 cor.analyse <- function(par1,par2,par3,par4){
   #--Daten verschneiden und vorbereiten--#
@@ -32,47 +35,69 @@ cor.analyse(AP.erg,"OEV_AP30.cv","OEV_AP30.len","OEV_AP30.ctg")
 cor.analyse(AP.erg500,"OEV_AP30.cv","EW","OEV_AP30.ctg")
 cor.analyse(AP.erg,"OEV_AP60.cv","Shape_Area","OEV_AP60.ctg")
 cor.analyse(AP.erg,"OEV_AP60.cv","EW","OEV_AP60.ctg")
+cor.analyse(E.Arzt.erg,"Pkw.cv","Shape_Area","Pkw.ctg")
+
+#OEV-Modellierung
+cor(E.Arzt.cor[E.Arzt.cor$OEV.Hst>0,]$OEV.cv,E.Arzt.cor[E.Arzt.cor$OEV.Hst>0,]$OEV.Hst)
+cor(E.Arzt.cor[E.Arzt.cor$OEV.BH>0,]$OEV.cv,E.Arzt.cor[E.Arzt.cor$OEV.BH>0,]$OEV.BH)
+cor(E.Arzt.cor[E.Arzt.cor$OEV.Fuss>0,]$OEV.cv,E.Arzt.cor[E.Arzt.cor$OEV.Fuss>0,]$OEV.Fuss)
+
+cor(E.Arzt.cor500[E.Arzt.cor500$OEV.Hst>0,]$OEV.cv,E.Arzt.cor500[E.Arzt.cor500$OEV.Hst>0,]$OEV.Hst)
+cor(E.Arzt.cor500[E.Arzt.cor500$OEV.BH>0,]$OEV.cv,E.Arzt.cor500[E.Arzt.cor500$OEV.BH>0,]$OEV.BH)
+cor(E.Arzt.cor500[E.Arzt.cor500$OEV.Fuss>0,]$OEV.cv,E.Arzt.cor500[E.Arzt.cor500$OEV.Fuss>0,]$OEV.Fuss)
 
 
-cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","Shape_Area")
-cor.analyse(MIVArzt.erg,"MIV_Arzt.cv","Shape_Area")
-cor.analyse(MIVOZ.erg,"MIV_OZ.cv","Shape_Area")
-
-cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","Hst.len")
-cor.analyse(OEVArzt.erg500,"OEV_Arzt.cv","Hst.len")
-cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","BH.mean")
-cor.analyse(OEVArzt.erg500,"OEV_Arzt.cv","BH.mean")
-cor.analyse(OEVArzt.erg,"OEV_Arzt.cv","Fuss.share")
-cor.analyse(OEVArzt.erg500,"OEV_Arzt.cv","Fuss.share")
 
 
-#--Analyse Hst-Dichte--#
-# E.Arzt.Hst <- merge(E.Arzt,Raster100[c("ID","IDVZelle","ID500")],by="ID")
+#--Analyse OEV-Modellierung--#
+E.Arzt.cor <- E.Arzt
+E.Arzt.cor <- rename(E.Arzt.cor, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.Arzt.cor[E.Arzt.cor$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.cor[E.Arzt.cor$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 
-OEVArzt.erg <- OEVArzt.erg[-c(9,10,11,12)]
-OEVArzt.erg <- merge(OEVArzt.erg,aggregate(StartHst ~ IDVZelle, E.Arzt.Hst[E.Arzt.Hst$BH<100,], 
-                                           function(x) length(unique(x))),all.x = T,by="IDVZelle") ##ohne Fusswege; unterschiedliche Haltestellen in Gebiet
-colnames(OEVArzt.erg)[9] <- "Hst.len"
-OEVArzt.erg$Hst.len[is.na(OEVArzt.erg$Hst.len)] <- 0 ##Wenn nur Fusswege in einem Gebiet. 0 wegen Vergleich zu wenigen unterschiedlichen Hst.
-OEVArzt.erg <- merge(OEVArzt.erg,aggregate(BH ~ IDVZelle, E.Arzt.Hst[E.Arzt.Hst$BH<100,], FUN="mean"),all.x = T,by="IDVZelle") ##ohne Fusswege!
-colnames(OEVArzt.erg)[10] <- "BH.mean"
-# OEVArzt.erg$BH.mean[is.na(OEVArzt.erg$BH.mean)] <- 111 ##Wenn nur Fusswege in einem Gebiet. Hoehere Bedienung gleich besser (Annahme).
-OEVArzt.erg <- merge(OEVArzt.erg,aggregate(BH ~ IDVZelle, E.Arzt.Hst[E.Arzt.Hst$BH>100,], FUN="length"),all.x = T,by="IDVZelle") ##nur Fusswege!
-colnames(OEVArzt.erg)[11] <- "Fuss.len"
-OEVArzt.erg$Fuss.share <- OEVArzt.erg$Fuss.len/OEVArzt.erg$OEV_Arzt.len
-OEVArzt.erg$Fuss.share[is.na(OEVArzt.erg$Fuss.share)] <- 0 ##Wenn keine Fusswege, dann laenge Fusswege NA.
+E.Arzt.Hst = aggregate(StartHst ~ IDVZelle, E.Arzt.cor[E.Arzt.cor$Umstiege<100,],function(x) length(unique(x))) ##Ohne Direktwege
+E.Arzt.Hst <-rename(E.Arzt.Hst, c("StartHst"="OEV.Hst"))
+E.Arzt.BH = aggregate(Verbindungen ~ IDVZelle, E.Arzt.cor[E.Arzt.cor$Umstiege<100,], FUN="mean") ##Ohne Direktwege
+E.Arzt.BH <-rename(E.Arzt.BH, c("Verbindungen"="OEV.BH"))
+E.Arzt.Fuss = aggregate(StartHst ~ IDVZelle, E.Arzt.cor[E.Arzt.cor$Umstiege>100,],FUN="length") ##Ohne Direktwege
+E.Arzt.Fuss <-rename(E.Arzt.Fuss, c("StartHst"="OEV.Fuss"))
+
+E.Arzt.cor <- merge(E.Arzt.erg[c("IDVZelle","OEV.cv","OEV.len")],E.Arzt.Hst,all.x=T)
+E.Arzt.cor <- merge(E.Arzt.cor,E.Arzt.BH,all.x=T)
+E.Arzt.cor <- merge(E.Arzt.cor,E.Arzt.Fuss,all.x=T)
+
+remove(E.Arzt.Hst,E.Arzt.BH,E.Arzt.Fuss)
+
+#Aufbereitung
+E.Arzt.cor <- E.Arzt.cor[E.Arzt.cor$OEV.len>4,] ##Nimm nur Gebiete, die mind. 5 Werte haben.
+
+E.Arzt.cor$OEV.Hst[is.na(E.Arzt.cor$OEV.Hst)] <-0
+E.Arzt.cor$OEV.BH[is.na(E.Arzt.cor$OEV.BH)] <-0
+E.Arzt.cor$OEV.Fuss[is.na(E.Arzt.cor$OEV.Fuss)] <-0
+
 
 #--500--#
-OEVArzt.erg500 <- OEVArzt.erg500[-c(8,9,10,11)]
-OEVArzt.erg500 <- merge(OEVArzt.erg500,aggregate(StartHst ~ ID500, E.Arzt.Hst[E.Arzt.Hst$BH<100,], 
-                                           function(x) length(unique(x))),all.x = T,by="ID500") ##ohne Fusswege; unterschiedliche Haltestellen in Gebiet
-colnames(OEVArzt.erg500)[8] <- "Hst.len"
-OEVArzt.erg500$Hst.len[is.na(OEVArzt.erg500$Hst.len)] <- 0 ##Wenn nur Fusswege in einem Gebiet. 0 wegen Vergleich zu wenigen unterschiedlichen Hst.
-OEVArzt.erg500 <- merge(OEVArzt.erg500,aggregate(BH ~ ID500, E.Arzt.Hst[E.Arzt.Hst$BH<100,], FUN="mean"),all.x = T,by="ID500") ##ohne Fusswege!
-colnames(OEVArzt.erg500)[9] <- "BH.mean"
-# OEVArzt.erg500$BH.mean[is.na(OEVArzt.erg500$BH.mean)] <- 111 ##Wenn nur Fusswege in einem Gebiet. Hoehere Bedienung gleich besser (Annahme).
-OEVArzt.erg500 <- merge(OEVArzt.erg500,aggregate(BH ~ ID500, E.Arzt.Hst[E.Arzt.Hst$BH>100,], FUN="length"),all.x = T,by="ID500") ##nur Fusswege!
-colnames(OEVArzt.erg500)[10] <- "Fuss.len"
-OEVArzt.erg500$Fuss.share <- OEVArzt.erg500$Fuss.len/OEVArzt.erg500$OEV_Arzt.len
-OEVArzt.erg500$Fuss.share[is.na(OEVArzt.erg500$Fuss.share)] <- 0 ##Wenn keine Fusswege, dann laenge Fusswege NA.
+E.Arzt.cor500 <- E.Arzt
+E.Arzt.cor500 <- rename(E.Arzt.cor500, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.Arzt.cor500[E.Arzt.cor500$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.cor500[E.Arzt.cor500$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 
+E.Arzt.Hst = aggregate(StartHst ~ ID500, E.Arzt.cor500[E.Arzt.cor500$Umstiege<100,],function(x) length(unique(x))) ##Ohne Direktwege
+E.Arzt.Hst <-rename(E.Arzt.Hst, c("StartHst"="OEV.Hst"))
+E.Arzt.BH = aggregate(Verbindungen ~ ID500, E.Arzt.cor500[E.Arzt.cor500$Umstiege<100,], FUN="mean") ##Ohne Direktwege
+E.Arzt.BH <-rename(E.Arzt.BH, c("Verbindungen"="OEV.BH"))
+E.Arzt.Fuss = aggregate(StartHst ~ ID500, E.Arzt.cor500[E.Arzt.cor500$Umstiege>100,],FUN="length") ##Ohne Direktwege
+E.Arzt.Fuss <-rename(E.Arzt.Fuss, c("StartHst"="OEV.Fuss"))
+
+E.Arzt.cor500 <- merge(E.Arzt.erg500[c("ID500","OEV.cv","OEV.len")],E.Arzt.Hst,all.x=T)
+E.Arzt.cor500 <- merge(E.Arzt.cor500,E.Arzt.BH,all.x=T)
+E.Arzt.cor500 <- merge(E.Arzt.cor500,E.Arzt.Fuss,all.x=T)
+
+remove(E.Arzt.Hst,E.Arzt.BH,E.Arzt.Fuss)
+
+#Aufbereitung
+E.Arzt.cor500 <- E.Arzt.cor500[E.Arzt.cor500$OEV.len>1,] ##Nimm nur Gebiete, die mind. 1 Werte haben.
+
+E.Arzt.cor500$OEV.Hst[is.na(E.Arzt.cor500$OEV.Hst)] <-0
+E.Arzt.cor500$OEV.BH[is.na(E.Arzt.cor500$OEV.BH)] <-0
+E.Arzt.cor500$OEV.Fuss[is.na(E.Arzt.cor500$OEV.Fuss)] <-0
