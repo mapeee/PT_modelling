@@ -9,8 +9,9 @@ library(rgdal)
 library(plyr)
 
 #--Achtung!!!: In Zeile 33 zu beruecksichtigen bei der Umbenennung der Spalten.
-# E.Arzt$Fahrzeit_OEV = E.Arzt$Minuten_OEV-E.Arzt$Anbindungszeit-E.Arzt$Abgangszeit
-# E.Arzt[E.Arzt$Fahrzeit_OEV<0,]$Fahrzeit_OEV <- 10
+#--Achtung!!!: Umgang mit Parkzeiten Pkw (-5).
+# E.Arzt2$Fahrzeit_OEV = E.Arzt2$Minuten_OEV-E.Arzt2$Anbindungszeit-E.Arzt2$Abgangszeit
+# E.Arzt2[E.Arzt2$Fahrzeit_OEV<0,]$Fahrzeit_OEV <- 100 ##Um eine bessere Vergleichbarkeit zu erzielen.
 # E.OZ$Fahrzeit_OEV = E.OZ$Minuten_OEV-E.OZ$Anbindungszeit-E.OZ$Abgangszeit
 # E.OZ[E.OZ$Fahrzeit_OEV<0,]$Fahrzeit_OEV <- 10
 
@@ -18,8 +19,8 @@ library(plyr)
 mean(E.Arzt.erg500[E.Arzt.erg500$OEV.ctg!='missing',]$OEV.cv)
 mean(E.Arzt.erg[E.Arzt.erg$Pkw.ctg!='missing',]$Pkw.cv)
 mean(E.Arzt.erg[E.Arzt.erg$Fuss.ctg!='missing',]$Fuss.cv)
-mean(E.Arzt.erg500[E.Arzt.erg500$Rad.ctg!='missing',]$Rad.cv)
-# 
+mean(E.Arzt.erg[E.Arzt.erg$Rad.ctg!='missing',]$Rad.cv)
+
 # mean(E.Arzt[E.Arzt$Minuten_Pkw<100,]$Minuten_Pkw)
 # mean(E.Arzt[E.Arzt$Minuten_Fuss<100,]$Minuten_Fuss)
 # mean(E.Arzt[E.Arzt$Minuten_Rad<100,]$Minuten_Rad)
@@ -31,12 +32,15 @@ mean(E.Arzt.erg500[E.Arzt.erg500$Rad.ctg!='missing',]$Rad.cv)
 #------Arzt
 E.Arzt.erg <- E.Arzt
 E.Arzt.erg <- rename(E.Arzt.erg, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
-E.Arzt.erg$Pkw <- E.Arzt.erg$Pkw-5
+# E.Arzt.erg$Pkw <- E.Arzt.erg$Pkw-5
 E.Arzt.erg[E.Arzt.erg$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg[E.Arzt.erg$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg[E.Arzt.erg$Rad<2,]$Rad <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg[E.Arzt.erg$Rad>30,]$Rad <- 30 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg[E.Arzt.erg$Fuss<2,]$Fuss <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg[E.Arzt.erg$Fuss>60,]$Fuss <- 60 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg[E.Arzt.erg$Meter_NMIV<50,]$Meter_NMIV <- 50 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg[E.Arzt.erg$Meter_NMIV>6000,]$Meter_NMIV <- 6000 ##Manchmal keine Wege wenn ausserhalb der Fuss-Distanz.6km da vergleichbar mit 30min Reisezeit Rad
 E.Arzt.erg[E.Arzt.erg$Meter_Pkw<1,]$Meter_Pkw <- 50 ##Um eine bessere Vergleichbarkeit zu erzielen.
 OEVArzt.erg <- do.call(data.frame,aggregate(OEV ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 PkwArzt.erg <- do.call(data.frame,aggregate(Pkw ~ IDVZelle+TYPENO, E.Arzt.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
@@ -88,11 +92,10 @@ E.Arzt.erg$Meter_NMIV.ctg[E.Arzt.erg$Meter_NMIV.len<5] <- 'missing'
 
 #------OZ
 E.OZ.erg <- E.OZ
-E.OZ.erg <- rename(E.OZ.erg, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
+E.OZ.erg <- rename(E.OZ.erg, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Rad"="Rad"))
 E.OZ.erg[E.OZ.erg$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.OZ.erg[E.OZ.erg$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.OZ.erg[E.OZ.erg$Rad<2,]$Rad <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
-E.OZ.erg[E.OZ.erg$Fuss<2,]$Fuss <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
 OEVOZ.erg <- do.call(data.frame,aggregate(OEV ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 PkwOZ.erg <- do.call(data.frame,aggregate(Pkw ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 RadOZ.erg <- do.call(data.frame,aggregate(Rad ~ IDVZelle+TYPENO, E.OZ.erg,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
@@ -128,14 +131,17 @@ E.OZ.erg$Rad.ctg[E.OZ.erg$Rad.len<5] <- 'missing'
 #------Arzt
 E.Arzt.erg500 <- E.Arzt
 E.Arzt.erg500 <- rename(E.Arzt.erg500, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Minuten_Fuss"="Fuss","Minuten_Rad"="Rad"))
-E.Arzt.erg500$Pkw <- E.Arzt.erg500$Pkw-5
+# E.Arzt.erg500$Pkw <- E.Arzt.erg500$Pkw-5
 E.Arzt.erg500[E.Arzt.erg500$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$Rad<2,]$Rad <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg500[E.Arzt.erg500$Rad>30,]$Rad <- 30 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$Fuss<2,]$Fuss <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg500[E.Arzt.erg500$Fuss>60,]$Fuss <- 60 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$Pkw<2,]$Pkw <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$Meter_Pkw<50,]$Meter_Pkw <- 50 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.Arzt.erg500[E.Arzt.erg500$Meter_NMIV<50,]$Meter_NMIV <- 50 ##Um eine bessere Vergleichbarkeit zu erzielen.
+E.Arzt.erg500[E.Arzt.erg500$Meter_NMIV>6000,]$Meter_NMIV <- 6000 ##Manchmal keine Wege wenn ausserhalb der Fuss-Distanz.6km da vergleichbar mit 30min Reisezeit Rad
 OEVArzt.erg <- do.call(data.frame,aggregate(OEV ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 PkwArzt.erg <- do.call(data.frame,aggregate(Pkw ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 FussArzt.erg <- do.call(data.frame,aggregate(Fuss ~ ID500, E.Arzt.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
@@ -190,7 +196,6 @@ E.OZ.erg500 <- rename(E.OZ.erg500, c("Minuten_OEV"="OEV","Minuten_Pkw"="Pkw","Mi
 E.OZ.erg500[E.OZ.erg500$OEV>120,]$OEV <- 120 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.OZ.erg500[E.OZ.erg500$OEV<1,]$OEV <- 1 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.OZ.erg500[E.OZ.erg500$Rad<2,]$Rad <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
-E.OZ.erg500[E.OZ.erg500$Fuss<2,]$Fuss <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
 E.OZ.erg500[E.OZ.erg500$Pkw<2,]$Pkw <- 2 ##Um eine bessere Vergleichbarkeit zu erzielen.
 OEVOZ.erg <- do.call(data.frame,aggregate(OEV ~ ID500, E.OZ.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))
 PkwOZ.erg <- do.call(data.frame,aggregate(Pkw ~ ID500, E.OZ.erg500,function(x) c(len = length(x), mean = mean(x), sd = stdabw.ggs(x))))

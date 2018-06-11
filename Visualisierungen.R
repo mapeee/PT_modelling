@@ -24,7 +24,7 @@ labels.ctg = c("0 - \n 0.19","0.2 - \n 0.39","0.4 - \n 0.59","0.6 - \n 0.79",
 
 #Druckbereich
 dev.off()
-par(mfrow=c(2,2)) ##zwei Spalten, zwei Zeilen
+par(mfrow=c(2,1)) ##zwei Spalten, zwei Zeilen
 par(mar=c(3.5,2.2,3.5,4.0)) ##Keine Raender
 par(mfrow=c(4,1)) ##zwei Spalten, zwei Zeilen
 
@@ -94,10 +94,10 @@ Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Hamburg (statistical areas)
 Visual.mm(OEVOZ.erg500,11000,"PT next regional metropolis R500","OEV_OZ.cv",T,0)
 #--Pkw--#
 #--Arzt--#
-Visual.mm(E.Arzt.erg,400,"Car next doctor Study area","Pkw.cv",T,0)
-Visual.mm(E.Arzt.erg,400,"Car next doctor Municipality","Pkw.cv",T,4)
+Visual.mm(E.Arzt.erg,400,"Car next doctor Study area","Pkw.cv",T,0,"Pkw.ctg")
+Visual.mm(E.Arzt.erg,400,"Car next doctor Municipality","Pkw.cv",T,4,"Pkw.ctg")
 Visual.mm(E.Arzt.erg,400,"Car next doctor Hamburg (statistical areas)","Pkw.cv",T,5,"Pkw.ctg")
-Visual.mm(E.Arzt.erg500,11000,"Car next doctor R500","Pkw.cv",T,0)
+Visual.mm(E.Arzt.erg500,11000,"Car next doctor R500","Pkw.cv",T,0,"Pkw.ctg")
 #--OZ--#
 Visual.mm(PkwOZ.erg,400,"Car next regional metropolis Study area","Pkw_OZ.cv",T,0)
 Visual.mm(PkwOZ.erg,400,"Car next regional metropolis Municipality","Pkw_OZ.cv",T,4)
