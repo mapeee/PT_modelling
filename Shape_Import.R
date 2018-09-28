@@ -6,7 +6,7 @@
 ##--Import Packages--##
 library(rgdal)
 library(xlsx)
-# write.xlsx(E.Arzt.erg, "c:/Users/mape/Desktop/mydata.xlsx") 
+# write.xlsx(E.Arzt.erg, "c:/Users/mape/Desktop/EArztVZ.xlsx") 
 
 ##--Verbindung zu Geodaten--##
 gdb <- "C:/Geodaten/Material.gdb" #Verbindung zur gdb
@@ -29,10 +29,13 @@ Raster500 <- merge(Raster500,data.frame(VZellen)[c("TYPENO","NO")],by.x="IDVZell
 
 #--Kumulationsindikatoren--#
 AP.500 <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Standortqualitaet.gdb",layer="E_Arbeitsplaetze_Potenziale_500"))
-AP.500 <- AP.500[c("ID","OEV_AP30","Pkw_AP30","OEV_AP60","Pkw_AP60","Fuss_AP30","Rad_AP30")] ##Nimm nur diese Spalten
+AP.500 <- AP.500[c("ID","OEV_AP30","Pkw_AP30","OEV_AP60","Pkw_AP60","Fuss_AP15","Rad_AP15",
+               "Fuss_AP30","Rad_AP30","OEV_AP05","Pkw_AP05","Fuss_AP05","Rad_AP05")]
 AP.500 <- merge(AP.500,Raster500,by="ID")
 
 AP <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Arbeitsplaetze.gdb",layer="E_Arbeitsplaetze_Potenziale"))
+# AP <- as.data.frame(readOGR(dsn="C:/Geodaten/LGV_Dienst/Freizeit.gdb",layer="E_Einwohner_Potenziale"))
+# colnames(AP) = gsub("EW", "AP", colnames(AP)) ##Umbenennen der Spaltennamen. Replace mit AP
 AP <- AP[c("ID","OEV_AP30","Pkw_AP30","OEV_AP60","Pkw_AP60","Fuss_AP15","Rad_AP15",
                "Fuss_AP30","Rad_AP30","OEV_AP05","Pkw_AP05","Fuss_AP05","Rad_AP05")]
 AP <- merge(AP,Raster100,by="ID")

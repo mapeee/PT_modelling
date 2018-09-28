@@ -29,7 +29,7 @@ par(mar=c(3.5,2.2,3.5,4.0)) ##Keine Raender
 par(mfrow=c(4,1)) ##zwei Spalten, zwei Zeilen
 
 #Karten
-Visual.karte(E.OZ.erg,"Rad.cv","Rad.len",5,0)
+Visual.karte(AP.erg,"Rad_AP30.cv","Rad_AP30.len",5,0)
 Visual.karte(AP.erg,"OEV_AP30.cv","OEV_AP30.len",5,5)
 
 
