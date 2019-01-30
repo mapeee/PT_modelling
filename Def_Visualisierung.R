@@ -24,7 +24,7 @@ Visual.mm <- function(par1,par2,par3,par4,par5,par6,par7){
                   col=Farbe,
                   cex.names = 0.8);
   axis(1,at=seq(0.7,length(levels(par1[,par7]))*1.2,1.2),labels=levels(par1[,par7]),cex.axis=0.9);
-  title(xlab = "cv",line = 2, font.lab = 2);
+  title(xlab = "VarK",line = 2, font.lab = 2);
   title(par3, line = 1);
   axis(side=2,line = -0.4);
   mtext("n", side=2,cex=0.7,font=2, line=1.5)
@@ -33,10 +33,10 @@ Visual.mm <- function(par1,par2,par3,par4,par5,par6,par7){
        labels = paste("n =",as.character(nrow(par1))),
        cex=1);
   text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 2.5 ),
-       labels = paste("'missings' =",as.character(sum(par1[,par7]=='missing'))),
+       labels = paste("'Missings' =",as.character(sum(par1[,par7]=='missing'))),
        cex=1);
   text(par("usr")[2]-1,par("usr")[4],adj = c( 1, 4 ),
-       labels = paste("mean cv =",
+       labels = paste("mean VarK =",
                       as.character(round(mean((data.frame(par1[par1[,par7]!='missing',])[par4])[[1]]),3))),
        cex=1);
   abline(v=1.3, col="royalblue4",lwd=2);
@@ -52,7 +52,7 @@ Visual.mm <- function(par1,par2,par3,par4,par5,par6,par7){
          at=c(0,250000,500000,max(EW)),
          labels=c("0","250","500",round(max(EW)/1000,0)))
     rug(x = c(125000,375000), ticksize = -0.02, side = 4,line = -0.4)
-    mtext("Population (k)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
+    mtext("Einwohner (Tsd.)", side=4,cex=0.7,font=2, line=1.6, col="darkred")
   }
 }
 

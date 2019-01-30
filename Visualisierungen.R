@@ -83,10 +83,10 @@ Visual.mm(AP.erg,600,"Walk Jobs 30min Study area","Fuss_AP05.cv",T,0,"Fuss_AP05.
 #Aufwandsindikator
 #--OEV--#
 #--Arzt--#
-Visual.mm(E.Arzt.erg,400,"PT next doctor Study area","OEV.cv",T,0,"OEV.ctg")
+Visual.mm(E.Arzt.erg,400,"ÖV, nächste Hausarzt, Gemeinden u. stat. Gebiete","OEV.cv",T,0,"OEV.ctg")
 Visual.mm(E.Arzt.erg,400,"PT next doctor Municipality","OEV.cv",T,4,"OEV.ctg")
 Visual.mm(E.Arzt.erg,40000,"PT next doctor Hamburg (statistical areas)","OEV.cv",T,5,"OEV.ctg")
-Visual.mm(E.Arzt.erg500,11000,"PT next doctor R500","OEV.cv",T,0,"OEV.ctg")
+Visual.mm(E.Arzt.erg500,11000,"ÖV, nächste Hausrzt, 500-Meter","OEV.cv",T,0,"OEV.ctg")
 #--OZ--#
 Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Study area","OEV_OZ.cv",T,0)
 Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Municipality","OEV_OZ.cv",T,4)
@@ -94,7 +94,7 @@ Visual.mm(OEVOZ.erg,400,"PT next regional metropolis Hamburg (statistical areas)
 Visual.mm(OEVOZ.erg500,11000,"PT next regional metropolis R500","OEV_OZ.cv",T,0)
 #--Pkw--#
 #--Arzt--#
-Visual.mm(E.Arzt.erg,400,"Car next doctor Study area","Pkw.cv",T,0,"Pkw.ctg")
+Visual.mm(E.Arzt.erg,400,"MIV, nächste Hausarzt, Gemeinden u. stat. Gebiete","Pkw.cv",T,0,"Pkw.ctg")
 Visual.mm(E.Arzt.erg,400,"Car next doctor Municipality","Pkw.cv",T,4,"Pkw.ctg")
 Visual.mm(E.Arzt.erg,400,"Car next doctor Hamburg (statistical areas)","Pkw.cv",T,5,"Pkw.ctg")
 Visual.mm(E.Arzt.erg500,11000,"Car next doctor R500","Pkw.cv",T,0,"Pkw.ctg")
